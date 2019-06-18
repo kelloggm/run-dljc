@@ -23,7 +23,7 @@ for repo in `cat ../$2`; do
     pushd ${REPO_NAME}
 
     if [ -f build.gradle ]; then
-	BUILD_CMD="./gradlew compileJava -Dorg.gradle.java.home=${JAVA_HOME}"
+	BUILD_CMD="./gradlew clean compileJava -Dorg.gradle.java.home=${JAVA_HOME}"
     elif [ -f pom.xml ]; then
 	BUILD_CMD="mvn clean compile -Djava.home=${JAVA_HOME}/jre"
     else
