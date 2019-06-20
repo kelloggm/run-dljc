@@ -33,7 +33,7 @@ for repo in `cat ../$2`; do
     if [ "${BUILD_CMD}" = "not found" ]; then
         echo "no build file found for ${REPO_NAME}; not calling DLJC" > ../../$1-results/${REPO_NAME}-check.log 
     else
-        ${DLJC} --lib /homes/gws/kelloggm/image-sniping-oss/typesafe-builder-checker/build/libs/typesafe-builder-checker.jar:/homes/gws/kelloggm/.m2/repository/org/springframework/spring-expression/5.1.7.RELEASE/spring-expression-5.1.7.RELEASE.jar -t checker --checker org.checkerframework.checker.builder.TypesafeBuilderChecker --stubs /homes/gws/kelloggm/image-sniping-oss/typesafe-builder-checker/stubs -- ${BUILD_CMD}
+        ${DLJC} --lib /homes/gws/kelloggm/image-sniping-oss/typesafe-builder-checker/build/libs/typesafe-builder-checker.jar:/homes/gws/kelloggm/.m2/repository/org/springframework/spring-expression/5.1.7.RELEASE/spring-expression-5.1.7.RELEASE.jar:/homes/gws/kelloggm/.m2/repository/org/springframework/spring-core/5.1.7.RELEASE/spring-core-5.1.7.RELEASE.jar:/homes/gws/kelloggm/.m2/repository/org/springframework/spring-jcl/5.1.7.RELEASE/spring-jcl-5.1.7.RELEASE.jar: -t checker --checker org.checkerframework.checker.builder.TypesafeBuilderChecker --stubs /homes/gws/kelloggm/image-sniping-oss/typesafe-builder-checker/stubs -- ${BUILD_CMD}
 
         cp dljc-out/check.log ../../$1-results/${REPO_NAME}-check.log
     fi
