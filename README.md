@@ -1,9 +1,9 @@
 ## run-dljc
 
-This project contains scripts used to control do-like-javac to run large-scale experiments using Checker Framework whole-program inference.
+This project contains scripts used to control [do-like-javac](https://github.com/kelloggm/do-like-javac) to run large-scale experiments using Checker Framework whole-program inference.
 
 The most important script is `run-dljc.sh`. It runs whole-program inference on every buildable gradle or maven project in a list of
-repository URL, git hash pairs. (It is restricted to using GitHub URLs.) The output is stored in a results directory, which can be summarized
+(GitHub repository URL, git hash) pairs.  The output is stored in a results directory, which can be summarized
 with `summary.sh`. To create an input file, you can use `run-queries.sh` to search GitHub for candidate repositories, or you can write
 an input file from scratch.
 
