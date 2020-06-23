@@ -1,13 +1,17 @@
 #!/bin/bash
 
-# This script runs the Checker Framework on each of a list of projects.
+# This script runs the Checker Framework's whole-program inference on each of a list of projects.
+# To create a list of projects, see run-queries.sh or create one by hand.
 
 ### Usage
 
 # - Move this script to an experiment directory.
 # - Make a file containing a list of git repositories, one per line. Repositories must be of the form: https://github.com/username/repository - the script is reliant on the number of slashes, so excluding https:// is an error.
-# - Ensure that your JAVA_HOME variable points to a Java 8 JDK
+# - Ensure that your JAVA8_HOME variable points to a Java 8 JDK
+# - Ensure that your JAVA11_HOME variable points to a Java 11 JDK
+# - Ensure that your JAVA_HOME variable points to the same place as JAVA11_HOME
 # - Ensure that your CHECKERFRAMEWORK variable points to a built copy of the Checker Framework
+# - Other dependencies: perl, python2.7, awk, git, mvn
 # - Then run a command like the following (replacing the example arguments with your own):
 #   > bash run-dljc.sh -o outdir -i describe-images-list -c org.checkerframework.checker.builder.TypesafeBuilderChecker -l /homes/gws/kelloggm/image-sniping-oss/typesafe-builder-checker/build/libs/typesafe-builder-checker.jar:/homes/gws/kelloggm/.m2/repository/org/springframework/spring-expression/5.1.7.RELEASE/spring-expression-5.1.7.RELEASE.jar:/homes/gws/kelloggm/.m2/repository/org/springframework/spring-core/5.1.7.RELEASE/spring-core-5.1.7.RELEASE.jar:/homes/gws/kelloggm/.m2/repository/org/springframework/spring-jcl/5.1.7.RELEASE/spring-jcl-5.1.7.RELEASE.jar: -s /homes/gws/kelloggm/image-sniping-oss/typesafe-builder-checker/stubs
 #
@@ -19,7 +23,7 @@
 #
 # -i infile : read the list of repositories to use from the file $infile. Each
 #             line should contain the (https) url of the git repository on
-#             GitHub and the commit hash to use, separated by spaces. If the
+#             GitHub and the commit hash to use, separated by whitespace. If the
 #             repository's owner is you (see -u flag), then each line owned by
 #             you must be followed by the original github repository.
 #
@@ -39,6 +43,8 @@
 # -u user : the GitHub user to consider the "owner" for repositories that have
 #           been forked and modified. These repositories must have a third entry
 #           in the infile indicating their origin. Default is "kelloggm".
+#
+# -t timeout : the timeout to use, in seconds
 #
 
 while getopts "c:l:s:o:i:q:w:t:" opt; do
@@ -265,4 +271,8 @@ javafiles=`grep -oh "\S*\.java " ${unaccounted_for}`
 
 # echo ${javafiles}
 
-perl ~/cloc-1.80.pl --report=${OUTDIR}-results/loc.txt ${javafiles}
+if [ ! -f cloc-1.80.pl ]; then
+    wget "https://github.com/AlDanial/cloc/releases/download/1.80/cloc-1.80.pl"
+fi
+
+perl cloc-1.80.pl --report=${OUTDIR}-results/loc.txt ${javafiles}

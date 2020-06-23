@@ -1,6 +1,8 @@
 #!/bin/sh
 
-# this script takes a directory of .log files as input, and produces a summary of the results
+# This script takes a directory of .log files as input, and produces a summary of the results.
+# Use its output to guide your analysis of the results of running ./run-dljc.sh: you must manually
+# examine the results of any project that appears in the "unaccounted for" list.
 
 target=$1
 
