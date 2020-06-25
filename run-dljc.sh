@@ -107,99 +107,14 @@ fi
 
 PWD=`pwd`
 
-DLJC=${PWD}/do-like-javac/dljc
+export DLJC=${PWD}/do-like-javac/dljc
     
-PATH=${JAVA_HOME}/bin:${PATH}
+export PATH=${JAVA_HOME}/bin:${PATH}
 
 mkdir ${OUTDIR} || true
 mkdir ${OUTDIR}-results || true
 
 pushd ${OUTDIR}
-
-function configure_and_exec_dljc {
-
-  USABLE="yes"
-  if [ -f build.gradle ]; then
-      chmod +x gradlew
-      BUILD_CMD="./gradlew clean compileJava -g .gradle -Dorg.gradle.java.home=${JAVA_HOME}"
-      CLEAN_CMD="./gradlew clean -g .gradle -Dorg.gradle.java.home=${JAVA_HOME}"
-  elif [ -f pom.xml ]; then
-      # if running on java 8, you must add /jre to the end of this Maven command
-      if [ "${JAVA_HOME}" = "${JAVA8_HOME}" ]; then
-          BUILD_CMD="mvn clean compile -Djava.home=${JAVA_HOME}/jre"
-          CLEAN_CMD="mvn clean -Djava.home=${JAVA_HOME}/jre"
-      else
-          BUILD_CMD="mvn clean compile -Djava.home=${JAVA_HOME}"
-          CLEAN_CMD="mvn clean -Djava.home=${JAVA_HOME}"
-      fi
-  else
-      BUILD_CMD="not found"
-  fi
-    
-  if [ "${BUILD_CMD}" = "not found" ]; then
-      echo "no build file found for ${REPO_NAME}; not calling DLJC" > ../../../${OUTDIR}-results/${REPO_NAME}-wpi.log 
-  else
-      DLJC_CMD="${DLJC} -t wpi --cleanCmd \"${CLEAN_CMD}\""
-      if [ ! "x${CHECKERS}" = "x" ]; then
-	  TMP="${DLJC_CMD} --checker ${CHECKERS}"
-          DLJC_CMD="${TMP}"
-      fi
-      if [ ! "x${CHECKER_LIB}" = "x" ]; then
-	  TMP="${DLJC_CMD} --lib ${CHECKER_LIB}"
-	  DLJC_CMD="${TMP}"
-      fi
-      
-      if [ ! "x${STUBS}" = "x" ]; then
-	  TMP="${DLJC_CMD} --stubs ${STUBS}"
-	  DLJC_CMD="${TMP}"
-      fi
-      
-      if [ ! "x${QUALS}" = "x" ]; then
-	  TMP="${DLJC_CMD} --quals ${QUALS}"
-	  DLJC_CMD="${TMP}"
-      fi
-      
-      if [ ! "x${TOUT}" = "x" ]; then
-          TMP="${DLJC_CMD}"
-          DLJC_CMD="timeout ${TOUT} ${TMP}"
-          echo "setting timeout to ${TOUT}"
-      fi
-      
-      TMP="${DLJC_CMD} -- ${BUILD_CMD}"
-      DLJC_CMD="${TMP}"
-      
-      # ensure the project is clean before invoking DLJC
-      eval ${CLEAN_CMD} < /dev/null
-
-      echo ${DLJC_CMD}
-      
-      eval ${DLJC_CMD} < /dev/null
-      
-      if [[ $? -eq 124 ]]; then
-          echo "dljc timed out for ${REPO_NAME}"
-          echo "dljc timed out for ${REPO_NAME}" > ../../../${OUTDIR}-results/${REPO_NAME}-wpi.log
-	  USABLE="no"
-      else 
-          if [ -f dljc-out/wpi.log ]; then
-              cp dljc-out/wpi.log ../../../${OUTDIR}-results/${REPO_NAME}-wpi.log
-              echo "${REPO},${HASH}" >> ../../../${OUTDIR}-results/interesting-results.csv
-	      USABLE="yes"
-          else
-              # if this last run was under Java 11, try to run
-              # under Java 8 instead
-              if [ "${JAVA_HOME}" = "${JAVA11_HOME}" ]; then
-                  export JAVA_HOME="${JAVA8_HOME}"
-                  echo "couldn't build using Java 11; trying Java 8"
-                  configure_and_exec_dljc
-              else
-                  echo "dljc could not run the build successfully" > ../../../${OUTDIR}-results/${REPO_NAME}-wpi.log
-		  USABLE="no"
-              fi
-          fi
-      fi
-  fi
-  export JAVA_HOME="${JAVA11_HOME}"
-}
 
 while IFS='' read -r line || [ "$line" ]
 do    
@@ -243,19 +158,22 @@ do
         ORIGIN=`echo ${REPOHASH} | awk '{print $3}'`
         git remote add unannotated ${ORIGIN}
     fi
+
+    REPO_FULLPATH=`pwd`
     
-    configure_and_exec_dljc
- 
-    popd 
     popd
 
-    cd ${PWD}
+    configure_and_exec_dljc -d ${REPO_FULLPATH} -c ${CHECKERS} -l ${CHECKER_LIB} -q ${QUALS} -s ${STUBS} -u ${USER} -t ${TOUT}
+
+    popd
 
     # if the result is unusable, we don't need it for data analysis and we can
     # delete it right away
-    if [ ${USABLE} = "no" ]; then
+    if [ -f ${REPO_FULLPATH}/.unusable ]; then
 	rm -rf ${REPO_NAME}-${HASH} &
     fi
+
+    cd ${PWD}
     
 done <${INLIST}
 
