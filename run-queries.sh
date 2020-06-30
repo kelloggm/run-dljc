@@ -1,14 +1,11 @@
 #!/bin/sh
 
-# This script collects a list of projects that match a query
-# from GitHub. You must have a git personal access token in
-# the file git-personal-access-token in the directory from which
-# you run this script.
+# This script collects a list of projects that match a query from GitHub.
 
 # inputs:
 #
-# the file git-personal-access-token must exist in the directory from which
-# this script is run, and must be a valid github OAuth token
+# The file git-personal-access-token must exist in the directory from which
+# this script is run, and must be a valid github OAuth token.
 #
 # $1 is the query file, which should contain the literal string to use
 # as the github search. REQUIRED, no default
@@ -18,7 +15,7 @@
 query_file=$1
 
 if [ -z "${query_file}" ]; then
-    echo "you must have provide a query file as the first argument"
+    echo "you must provide a query file as the first argument"
     exit 2
 fi
 
@@ -55,12 +52,12 @@ for i in $(seq "${page_count}"); do
              "${full_query}" \
         | grep "        \"html_url" \
         | grep -v "          " \
-        | sort | uniq \
+        | sort -u \
         | cut -d \" -f 4 \
         | grep -v "kelloggm" \
         | grep -v "libcore" \
-    | grep -v "apache-harmony" \
-    | grep -v "AndroidSDKSources" >> "${tempfile}"
+        | grep -v "apache-harmony" \
+        | grep -v "AndroidSDKSources" >> "${tempfile}"
 done
 
 sort -u -o "${tempfile}" "${tempfile}"

@@ -7,7 +7,6 @@
 # Change these if you are running on a non-CSE machine.
 export JAVA11_HOME=/usr/lib/jvm/java-11-openjdk/
 export JAVA8_HOME=/usr/lib/jvm/java-1.8.0-openjdk
-export JAVA_HOME=${JAVA11_HOME}
 
 # Everyone must change these.
 export PARENTDIR=${HOME}/compliance-experiments/fse20
@@ -21,6 +20,7 @@ export ANDROID_HOME=${PARENTDIR}/android_home
 timeout=3600 # 60 minutes
 
 # There is no need to make changes below this point.
+export JAVA_HOME=${JAVA11_HOME}
 repolistbase=$(basename "$repolist")
 
 # Code starts here.

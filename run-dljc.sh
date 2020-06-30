@@ -80,7 +80,7 @@ fi
 
 
 if [ "x${CHECKERFRAMEWORK}" = "x" ]; then
-    echo "CHECKERFRAMEWORK must be set to the base directory of a pre-built Checker Framework for this script to succeed. Please checkout github.com/typetools/checker-framework and follow the build instructions there"
+    echo "CHECKERFRAMEWORK must be set to a locally-built Checker Framework. Please clone and build github.com/typetools/checker-framework"
     exit 2
 fi
 
@@ -111,8 +111,8 @@ export DLJC="${ORIGIN_PWD}/do-like-javac/dljc"
     
 export PATH="${JAVA_HOME}/bin:${PATH}"
 
-mkdir "${OUTDIR}" || true
-mkdir "${OUTDIR}-results" || true
+mkdir -p "${OUTDIR}"
+mkdir -p "${OUTDIR}-results"
 
 pushd "${OUTDIR}" || exit 5
 
@@ -127,9 +127,7 @@ do
 
     # need a layer in the file structure that prevents
     # two repos with the same name from colliding
-    if [ ! -d "${REPO_NAME}-${HASH}" ]; then
-        mkdir "${REPO_NAME}-${HASH}"
-    fi
+    mkdir -p "${REPO_NAME}-${HASH}"
 
     pushd "${REPO_NAME}-${HASH}" || exit 5
     
@@ -144,9 +142,7 @@ do
     # if the above clone command failed for whatever reason, create an
     # empty directory so that the rest of the commands fail gracefully
     # without messing with the directory structure
-    if [ ! -d "${REPO_NAME}" ]; then
-        mkdir "${REPO_NAME}"
-    fi
+    mkdir -p "${REPO_NAME}"
 
     pushd "${REPO_NAME}" || exit 5
 
