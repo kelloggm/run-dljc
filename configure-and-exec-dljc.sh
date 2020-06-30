@@ -36,14 +36,14 @@ done
 
 # JAVA_HOME must point to a Java 8 JDK for this script to work
 if [ "x${JAVA_HOME}" = "x" ]; then
-    echo "JAVA_HOME must be set to a Java 8 JDK for this script to succeed"
+    echo "JAVA_HOME must be set to a Java 8 JDK"
     exit 1
 fi
 
 # testing for JAVA11_HOME, not an unintentional reference to JAVA8_HOME
 # shellcheck disable=SC2153
 if [ "x${JAVA11_HOME}" = "x" ]; then
-    echo "JAVA11_HOME must be set to a Java 11 JDK for this script to succeed"
+    echo "JAVA11_HOME must be set to a Java 11 JDK"
     exit 1
 fi
 
@@ -55,7 +55,7 @@ if [ "x${CHECKERFRAMEWORK}" = "x" ]; then
 fi
 
 if [ "x${DLJC}" = "x" ]; then
-    echo "DLJC must be set to the dljc executable for this script to succeed. Please checkout github.com/kelloggm/do-like-javac and point the DLJC environment variable to its dljc script"
+    echo "DLJC must be set to the dljc executable. Please checkout github.com/kelloggm/do-like-javac and point the DLJC environment variable to its dljc script"
     exit 3
 fi
 

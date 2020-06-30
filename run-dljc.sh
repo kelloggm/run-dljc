@@ -74,7 +74,7 @@ done
 
 # JAVA_HOME must point to a Java 8 JDK for this script to work
 if [ "x${JAVA_HOME}" = "x" ]; then
-    echo "JAVA_HOME must be set to a Java 8 JDK for this script to succeed"
+    echo "JAVA_HOME must be set to a Java 8 JDK"
     exit 1
 fi
 
