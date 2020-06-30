@@ -11,7 +11,7 @@
 # -i and -o are not valid options
 # new option -d: the directory containing the target project
 
-while getopts "c:l:q:s:d:u:t:" opt; do
+while getopts "c:l:s:d:q:w:t:" opt; do
   case $opt in
     c) CHECKERS="$OPTARG"
        ;;
@@ -77,8 +77,7 @@ function configure_and_exec_dljc {
   fi
     
   if [ "${BUILD_CMD}" = "not found" ]; then
-      echo "no build file found for ${REPO_NAME}; not calling DLJC"
-      USABLE="no"
+      echo "no build file found for ${REPO_NAME}; not calling DLJC" > ../../../${OUTDIR}-results/${REPO_NAME}-wpi.log 
   else
       DLJC_CMD="${DLJC} -t wpi --cleanCmd \"${CLEAN_CMD}\""
       if [ ! "x${CHECKERS}" = "x" ]; then
@@ -117,11 +116,14 @@ function configure_and_exec_dljc {
       eval ${DLJC_CMD} < /dev/null
       
       if [[ $? -eq 124 ]]; then
-          echo "dljc timed out for ${DIR}"
+          echo "dljc timed out for ${REPO_NAME}"
+          echo "dljc timed out for ${REPO_NAME}" > ../../../${OUTDIR}-results/${REPO_NAME}-wpi.log
 	  USABLE="no"
       else 
           if [ -f dljc-out/wpi.log ]; then
-              USABLE="yes"
+              cp dljc-out/wpi.log ../../../${OUTDIR}-results/${REPO_NAME}-wpi.log
+              echo "${REPO},${HASH}" >> ../../../${OUTDIR}-results/interesting-results.csv
+	      USABLE="yes"
           else
               # if this last run was under Java 11, try to run
               # under Java 8 instead
@@ -130,7 +132,7 @@ function configure_and_exec_dljc {
                   echo "couldn't build using Java 11; trying Java 8"
                   configure_and_exec_dljc
               else
-                  echo "dljc could not run the build successfully"
+                  echo "dljc could not run the build successfully" > ../../../${OUTDIR}-results/${REPO_NAME}-wpi.log
 		  USABLE="no"
               fi
           fi

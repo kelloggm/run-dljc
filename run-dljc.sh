@@ -105,9 +105,9 @@ if [ ! -d do-like-javac ]; then
     git clone https://github.com/kelloggm/do-like-javac
 fi
 
-ORIGIN_PWD=`pwd`
+PWD=`pwd`
 
-export DLJC=${ORIGIN_PWD}/do-like-javac/dljc
+export DLJC=${PWD}/do-like-javac/dljc
     
 export PATH=${JAVA_HOME}/bin:${PATH}
 
@@ -163,10 +163,7 @@ do
     
     popd
 
-    RESULT_LOG="${ORIGIN_PWD}/${OUTDIR}-results/${REPO_NAME}-${HASH}-wpi.log"
-    touch ${RESULT_LOG}
-
-    ${ORIGIN_PWD}/configure-and-exec-dljc.sh -d ${REPO_FULLPATH} -c ${CHECKERS} -l ${CHECKER_LIB} -q ${QUALS} -s ${STUBS} -u ${USER} -t ${TOUT} &> ${RESULT_LOG}
+    configure_and_exec_dljc -d ${REPO_FULLPATH} -c ${CHECKERS} -l ${CHECKER_LIB} -q ${QUALS} -s ${STUBS} -u ${USER} -t ${TOUT}
 
     popd
 
@@ -174,11 +171,9 @@ do
     # delete it right away
     if [ -f ${REPO_FULLPATH}/.unusable ]; then
 	rm -rf ${REPO_NAME}-${HASH} &
-    else
-        cat ${REPO_FULLPATH}/dljc-out/wpi.log >> ${RESULT_LOG}
     fi
 
-    cd ${ORIGIN_PWD}
+    cd ${PWD}
     
 done <${INLIST}
 
