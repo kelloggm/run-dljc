@@ -36,26 +36,26 @@ done
 
 # JAVA_HOME must point to a Java 8 JDK for this script to work
 if [ "x${JAVA_HOME}" = "x" ]; then
-    echo "JAVA_HOME must be set to a Java 8 JDK"
+    echo "JAVA_HOME is not set; it must be set to a Java 8 JDK"
     exit 1
 fi
 
 # testing for JAVA11_HOME, not an unintentional reference to JAVA8_HOME
 # shellcheck disable=SC2153
 if [ "x${JAVA11_HOME}" = "x" ]; then
-    echo "JAVA11_HOME must be set to a Java 11 JDK"
+    echo "JAVA11_HOME is not set; it must be set to a Java 11 JDK"
     exit 1
 fi
 
 JAVA8_HOME="${JAVA_HOME}"
 
 if [ "x${CHECKERFRAMEWORK}" = "x" ]; then
-    echo "CHECKERFRAMEWORK must be set to a locally-built Checker Framework. Please clone and build github.com/typetools/checker-framework"
+    echo "CHECKERFRAMEWORK is not set; it must be set to a locally-built Checker Framework. Please clone and build github.com/typetools/checker-framework"
     exit 2
 fi
 
 if [ "x${DLJC}" = "x" ]; then
-    echo "DLJC must be set to the dljc executable. Please checkout github.com/kelloggm/do-like-javac and point the DLJC environment variable to its dljc script"
+    echo "DLJC is not set; it must be set to the dljc executable. Please checkout github.com/kelloggm/do-like-javac and point the DLJC environment variable to its dljc script"
     exit 3
 fi
 

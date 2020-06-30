@@ -74,13 +74,13 @@ done
 
 # JAVA_HOME must point to a Java 8 JDK for this script to work
 if [ "x${JAVA_HOME}" = "x" ]; then
-    echo "JAVA_HOME must be set to a Java 8 JDK"
+    echo "JAVA_HOME is not set; it must be set to a Java 8 JDK"
     exit 1
 fi
 
 
 if [ "x${CHECKERFRAMEWORK}" = "x" ]; then
-    echo "CHECKERFRAMEWORK must be set to a locally-built Checker Framework. Please clone and build github.com/typetools/checker-framework"
+    echo "CHECKERFRAMEWORK is not set; it must be set to a locally-built Checker Framework. Please clone and build github.com/typetools/checker-framework"
     exit 2
 fi
 
