@@ -6,7 +6,9 @@
 ### Usage
 
 # - Move this script to an experiment directory.
-# - Make a file containing a list of git repositories, one per line. Repositories must be of the form: https://github.com/username/repository - the script is reliant on the number of slashes, so excluding https:// is an error.
+# - Make a file containing a list of git repositories, one per line.
+#   Repositories must be of the form: https://github.com/username/repository
+#   The script is reliant on the number of slashes, so excluding https:// is an error.
 # - Ensure that your JAVA8_HOME variable points to a Java 8 JDK
 # - Ensure that your JAVA11_HOME variable points to a Java 11 JDK
 # - Ensure that your JAVA_HOME variable points to the same place as JAVA11_HOME
