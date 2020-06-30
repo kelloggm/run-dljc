@@ -100,6 +100,8 @@ fi
 
 ### Script
 
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
 # clone DLJC if it's not present
 if [ ! -d do-like-javac ]; then
     git clone https://github.com/kelloggm/do-like-javac
