@@ -12,8 +12,8 @@ timed_out=$(grep -cl "dljc timed out for" "${targetdir}/*.log")
 timed_out_percent=$(((timed_out*100)/total))
 timed_out_list=$(grep -l "dljc timed out for" "${targetdir}/*.log")
 
-no_build=$(grep -cl "no build file found for" "${targetdir}/*.log")
-no_build_percent=$(((no_build*100)/total))
+no_build_file=$(grep -cl "no build file found for" "${targetdir}/*.log")
+no_build_file_percent=$(((no_build_file*100)/total))
 
 no_cf_old=$(grep -cl "dljc could not run the Checker Framework" "${targetdir}/*.log")
 no_cf_new=$(grep -cl "dljc could not run the build successfully" "${targetdir}/*.log")
@@ -21,7 +21,7 @@ no_cf=$((no_cf_old+no_cf_new))
 no_cf_percent=$(((no_cf*100)/total))
 
 echo "total repositories: ${total} (100%)"
-echo "no maven or gradle build file: ${no_build} (~${no_build_percent}%)"
+echo "no maven or gradle build file: ${no_build_file} (~${no_build_file_percent}%)"
 echo "build failed: ${no_cf} (~${no_cf_percent})"
 echo "timed out: ${timed_out} (~${timed_out_percent}%)"
 echo ""
