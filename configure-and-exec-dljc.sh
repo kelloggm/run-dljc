@@ -40,6 +40,14 @@ if [ "x${JAVA_HOME}" = "x" ]; then
     exit 1
 fi
 
+# testing for JAVA11_HOME, not an unintentional reference to JAVA8_HOME
+# shellcheck disable=SC2153
+if [ "x${JAVA11_HOME}" = "x" ]; then
+    echo "JAVA11_HOME must be set to a Java 11 JDK for this script to succeed"
+    exit 1
+fi
+
+JAVA8_HOME="${JAVA_HOME}"
 
 if [ "x${CHECKERFRAMEWORK}" = "x" ]; then
     echo "CHECKERFRAMEWORK must be set to the base directory of a pre-built Checker Framework for this script to succeed. Please checkout github.com/typetools/checker-framework and follow the build instructions there"
@@ -80,24 +88,24 @@ function configure_and_exec_dljc {
       echo "no build file found for ${REPO_NAME}; not calling DLJC"
       USABLE="no"
   else
-      DLJC_CMD="${DLJC} -t wpi --cleanCmd \"${CLEAN_CMD}\""
+      DLJC_CMD="${DLJC} -t wpi"
       if [ ! "x${CHECKERS}" = "x" ]; then
-	  TMP="${DLJC_CMD} --checker ${CHECKERS}"
+      TMP="${DLJC_CMD} --checker ${CHECKERS}"
           DLJC_CMD="${TMP}"
       fi
       if [ ! "x${CHECKER_LIB}" = "x" ]; then
-	  TMP="${DLJC_CMD} --lib ${CHECKER_LIB}"
-	  DLJC_CMD="${TMP}"
+      TMP="${DLJC_CMD} --lib ${CHECKER_LIB}"
+      DLJC_CMD="${TMP}"
       fi
       
       if [ ! "x${STUBS}" = "x" ]; then
-	  TMP="${DLJC_CMD} --stubs ${STUBS}"
-	  DLJC_CMD="${TMP}"
+      TMP="${DLJC_CMD} --stubs ${STUBS}"
+      DLJC_CMD="${TMP}"
       fi
       
       if [ ! "x${QUALS}" = "x" ]; then
-	  TMP="${DLJC_CMD} --quals ${QUALS}"
-	  DLJC_CMD="${TMP}"
+      TMP="${DLJC_CMD} --quals ${QUALS}"
+      DLJC_CMD="${TMP}"
       fi
       
       if [ ! "x${TOUT}" = "x" ]; then
@@ -110,15 +118,15 @@ function configure_and_exec_dljc {
       DLJC_CMD="${TMP}"
       
       # ensure the project is clean before invoking DLJC
-      eval ${CLEAN_CMD} < /dev/null
+      eval "${CLEAN_CMD}" < /dev/null
 
-      echo ${DLJC_CMD}
+      echo "${DLJC_CMD}"
       
-      eval ${DLJC_CMD} < /dev/null
+      eval "${DLJC_CMD}" < /dev/null
       
       if [[ $? -eq 124 ]]; then
           echo "dljc timed out for ${DIR}"
-	  USABLE="no"
+      USABLE="no"
       else 
           if [ -f dljc-out/wpi.log ]; then
               USABLE="yes"
@@ -131,7 +139,7 @@ function configure_and_exec_dljc {
                   configure_and_exec_dljc
               else
                   echo "dljc could not run the build successfully"
-		  USABLE="no"
+                  USABLE="no"
               fi
           fi
       fi
@@ -141,13 +149,13 @@ function configure_and_exec_dljc {
 
 #### Main script
 
-pushd ${DIR}
+pushd "${DIR}" || exit 1
 
 configure_and_exec_dljc
 
-# support run-dljc's ability to delete unusable projects automatically
-if [ ${USABLE} = "no" ]; then
+# support run-dljc.sh's ability to delete unusable projects automatically
+if [ "${USABLE}" = "no" ]; then
     touch .unusable
 fi
 
-popd
+popd || exit 1

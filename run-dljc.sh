@@ -47,7 +47,7 @@
 # -t timeout : the timeout to use, in seconds
 #
 
-while getopts "c:l:s:o:i:q:w:t:" opt; do
+while getopts "c:l:s:o:i:q:u:t:" opt; do
   case $opt in
     c) CHECKERS="$OPTARG"
        ;;
@@ -105,97 +105,95 @@ if [ ! -d do-like-javac ]; then
     git clone https://github.com/kelloggm/do-like-javac
 fi
 
-ORIGIN_PWD=`pwd`
+ORIGIN_PWD=$(pwd)
 
-export DLJC=${ORIGIN_PWD}/do-like-javac/dljc
+export DLJC="${ORIGIN_PWD}/do-like-javac/dljc"
     
-export PATH=${JAVA_HOME}/bin:${PATH}
+export PATH="${JAVA_HOME}/bin:${PATH}"
 
-mkdir ${OUTDIR} || true
-mkdir ${OUTDIR}-results || true
+mkdir "${OUTDIR}" || true
+mkdir "${OUTDIR}-results" || true
 
-pushd ${OUTDIR}
+pushd "${OUTDIR}" || exit 5
 
 while IFS='' read -r line || [ "$line" ]
 do    
     REPOHASH=${line}
 
-    REPO=`echo ${REPOHASH} | awk '{print $1}'`
-    HASH=`echo ${REPOHASH} | awk '{print $2}'`
+    REPO=$(echo "${REPOHASH}" | awk '{print $1}')
+    HASH=$(echo "${REPOHASH}" | awk '{print $2}')
 
-    REPO_NAME=`echo ${REPO} | cut -d / -f 5`
+    REPO_NAME=$(echo "${REPO}" | cut -d / -f 5)
 
     # need a layer in the file structure that prevents
     # two repos with the same name from colliding
-    if [ ! -d ${REPO_NAME}-${HASH} ]; then
-        mkdir ${REPO_NAME}-${HASH}
+    if [ ! -d "${REPO_NAME}-${HASH}" ]; then
+        mkdir "${REPO_NAME}-${HASH}"
     fi
 
-    pushd ${REPO_NAME}-${HASH}
+    pushd "${REPO_NAME}-${HASH}" || exit 5
     
-    if [ ! -d ${REPO_NAME} ]; then
-        # this environment variable prevents git from prompting for username/password
-        # if the repository no longer exists
-        GIT_TERMINAL_PROMPT=0 git clone ${REPO}
+    if [ ! -d "${REPO_NAME}" ]; then
+        # this environment variable prevents git from prompting for
+	# username/password if the repository no longer exists
+        GIT_TERMINAL_PROMPT=0 git clone "${REPO}"
     else
-        rm -rf ${REPO_NAME}/dljc-out
+        rm -rf "${REPO_NAME}/dljc-out"
     fi
 
     # if the above clone command failed for whatever reason, create an
     # empty directory so that the rest of the commands fail gracefully
     # without messing with the directory structure
-    if [ ! -d ${REPO_NAME} ]; then
-        mkdir ${REPO_NAME}
+    if [ ! -d "${REPO_NAME}" ]; then
+        mkdir "${REPO_NAME}"
     fi
 
-    pushd ${REPO_NAME}
+    pushd "${REPO_NAME}" || exit 5
 
-    git checkout ${HASH}
+    git checkout "${HASH}"
 
-    OWNER=`echo ${REPO} | cut -d / -f 4`
+    OWNER=$(echo "${REPO}" | cut -d / -f 4)
 
     if [ "${OWNER}" = "${USER}" ]; then
-        ORIGIN=`echo ${REPOHASH} | awk '{print $3}'`
-        git remote add unannotated ${ORIGIN}
+        ORIGIN=$(echo "${REPOHASH}" | awk '{print $3}')
+        git remote add unannotated "${ORIGIN}"
     fi
 
-    REPO_FULLPATH=`pwd`
+    REPO_FULLPATH=$(pwd)
     
-    popd
+    popd || exit 5
 
     RESULT_LOG="${ORIGIN_PWD}/${OUTDIR}-results/${REPO_NAME}-${HASH}-wpi.log"
-    touch ${RESULT_LOG}
+    touch "${RESULT_LOG}"
 
-    ${ORIGIN_PWD}/configure-and-exec-dljc.sh -d ${REPO_FULLPATH} -c ${CHECKERS} -l ${CHECKER_LIB} -q ${QUALS} -s ${STUBS} -u ${USER} -t ${TOUT} &> ${RESULT_LOG}
+    "${ORIGIN_PWD}/configure-and-exec-dljc.sh" -d "${REPO_FULLPATH}" -c "${CHECKERS}" -l "${CHECKER_LIB}" -q "${QUALS}" -s "${STUBS}" -u "${USER}" -t "${TOUT}" &> "${RESULT_LOG}"
 
-    popd
+    popd || exit 5
 
     # if the result is unusable, we don't need it for data analysis and we can
     # delete it right away
-    if [ -f ${REPO_FULLPATH}/.unusable ]; then
-	rm -rf ${REPO_NAME}-${HASH} &
+    if [ -f "${REPO_FULLPATH}/.unusable" ]; then
+        rm -rf "${REPO_NAME}-${HASH}" &
     else
-        cat ${REPO_FULLPATH}/dljc-out/wpi.log >> ${RESULT_LOG}
+        cat "${REPO_FULLPATH}/dljc-out/wpi.log" >> "${RESULT_LOG}"
     fi
 
-    cd ${ORIGIN_PWD}
+    cd "${ORIGIN_PWD}" || exit 5
     
-done <${INLIST}
+done <"${INLIST}"
 
-popd
+popd || exit 5
 
-unaccounted_for=`grep -Zvl "no build file found for" ${OUTDIR}-results/*.log \
+unaccounted_for=$(grep -Zvl "no build file found for" "${OUTDIR}-results/*.log" \
     | xargs -0 grep -Zvl "dljc could not run the Checker Framework" \
     | xargs -0 grep -Zvl "dljc could not run the build successfully" \
     | xargs -0 grep -Zvl "dljc timed out for" \
-    | xargs -0 echo`
+    | xargs -0 echo)
 
-javafiles=`grep -oh "\S*\.java " ${unaccounted_for}`
-
-# echo ${javafiles}
+javafiles=$(grep -oh "\S*\.java " "${unaccounted_for}")
 
 if [ ! -f cloc-1.80.pl ]; then
     wget "https://github.com/AlDanial/cloc/releases/download/1.80/cloc-1.80.pl"
 fi
 
-perl cloc-1.80.pl --report=${OUTDIR}-results/loc.txt ${javafiles}
+perl cloc-1.80.pl --report="${OUTDIR}-results/loc.txt" "${javafiles}"
