@@ -41,6 +41,8 @@ rm -f /tmp/github-hash-results.txt
 hashfile=$(mktemp /tmp/github-hash-results.txt)
 #trap "rm -f ${hashfile}" 0 2 3 15
 
+curl_output_file=$(mktemp curl-output-XXX.txt --tmpdir)
+
 # find the repos
 for i in $(seq "${page_count}"); do
     # GitHub only allows 30 searches per minute, so add a delay to each request.
