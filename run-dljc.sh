@@ -5,17 +5,17 @@
 
 ### Usage
 
-# - Move this script to an experiment directory.
-# - Make a file containing a list of git repositories, one per line.
-#   Repositories must be of the form: https://github.com/username/repository
-#   The script is reliant on the number of slashes, so excluding https:// is an error.
+# - Clone the run-dljc repository containing this script on the experimental
+#   machine.
+# - Make a file containing a list of git repositories and hashes. Each line of
+#   the file should contain one repository and one hash, and may optionally
+#   contain a third repository (see the -i argument description below).
 # - Ensure that your JAVA8_HOME variable points to a Java 8 JDK
 # - Ensure that your JAVA11_HOME variable points to a Java 11 JDK
-# - Ensure that your JAVA_HOME variable points to the same place as JAVA11_HOME
 # - Ensure that your CHECKERFRAMEWORK variable points to a built copy of the Checker Framework
-# - Other dependencies: perl, python2.7, awk, git, mvn
-# - Then run a command like the following (replacing the example arguments with your own):
-#   > bash run-dljc.sh -o outdir -i describe-images-list -c org.checkerframework.checker.builder.TypesafeBuilderChecker -l ${HOME}/image-sniping-oss/typesafe-builder-checker/build/libs/typesafe-builder-checker.jar:${HOME}/.m2/repository/org/springframework/spring-expression/5.1.7.RELEASE/spring-expression-5.1.7.RELEASE.jar:${HOME}/.m2/repository/org/springframework/spring-core/5.1.7.RELEASE/spring-core-5.1.7.RELEASE.jar:${HOME}/.m2/repository/org/springframework/spring-jcl/5.1.7.RELEASE/spring-jcl-5.1.7.RELEASE.jar: -s ${HOME}/image-sniping-oss/typesafe-builder-checker/stubs
+# - Other dependencies: perl, python2.7 (for dljc), awk, git, mvn, gradle
+# - Run the script. There is an example invocation in
+#   no-literal-securerandom-exact-dljc-cmd.sh
 #
 # The meaning of each required argument is:
 #
@@ -25,9 +25,14 @@
 #
 # -i infile : read the list of repositories to use from the file $infile. Each
 #             line should contain the (https) url of the git repository on
-#             GitHub and the commit hash to use, separated by whitespace. If the
-#             repository's owner is you (see -u flag), then each line owned by
-#             you must be followed by the original github repository.
+#             GitHub and the commit hash to use, separated by whitespace.
+#             Repositories must be of the form:
+#             https://github.com/username/repository - the script is reliant
+#             on the number of slashes, so excluding https:// is an error.
+#             
+#             If the repository's owner is the user specified by the -u flag,
+#             then each line owned by that user must be followed by the
+#             original github repository.
 #
 # -c checkers : a comma-separated list of typecheckers to run
 #
@@ -74,15 +79,38 @@ done
 
 # check required arguments and environment variables:
 
-# JAVA_HOME must point to a Java 8 JDK for this script to work
-if [ "x${JAVA_HOME}" = "x" ]; then
-    echo "JAVA_HOME is not set; it must be set to a Java 8 JDK"
+if [ "x${JAVA8_HOME}" = "x" ]; then
+    echo "JAVA8_HOME must be set to a Java 8 JDK for this script to succeed"
     exit 1
 fi
 
+if [ ! -d "${JAVA8_HOME}" ]; then
+    echo "JAVA8_HOME is set to a non-existant directory. Check that ${JAVA8_HOME} exists."
+    exit 1
+fi
+
+if [ "x${JAVA11_HOME}" = "x" ]; then
+    echo "JAVA11_HOME must be set to a Java 11 JDK for this script to succeed"
+    exit 1
+fi
+
+if [ ! -d "${JAVA11_HOME}" ]; then
+    echo "JAVA11_HOME is set to a non-existant directory. Check that ${JAVA11_HOME} exists."
+    exit 1
+fi
 
 if [ "x${CHECKERFRAMEWORK}" = "x" ]; then
     echo "CHECKERFRAMEWORK is not set; it must be set to a locally-built Checker Framework. Please clone and build github.com/typetools/checker-framework"
+    exit 2
+fi
+
+if [ ! -d "${CHECKERFRAMEWORK}" ]; then
+    echo "CHECKERFRAMEWORK is set to a non-existant directory. Check that ${CHECKERFRAMEWORK} exists."
+    exit 2
+fi
+
+if [ "x${CHECKERS}" = "x" ]; then
+    echo "you must specify at least one checker using the -c argument"
     exit 2
 fi
 
@@ -104,14 +132,18 @@ fi
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-# clone DLJC if it's not present
-if [ ! -d do-like-javac ]; then
+# clone\update DLJC
+if [ ! -d "${SCRIPTDIR}/../do-like-javac" ]; then
+    pushd "${SCRIPTDIR}/.." || exit 5
     git clone https://github.com/kelloggm/do-like-javac
+    popd || exit 5
+else
+    pushd "${SCRIPTDIR}/../do-like-javac" || exit 5
+    git pull
+    popd || exit 5 
 fi
 
-ORIGIN_PWD=$(pwd)
-
-export DLJC="${ORIGIN_PWD}/do-like-javac/dljc"
+export DLJC="${SCRIPTDIR}/../do-like-javac/dljc"
     
 export PATH="${JAVA_HOME}/bin:${PATH}"
 
@@ -128,12 +160,15 @@ do
     HASH=$(echo "${REPOHASH}" | awk '{print $2}')
 
     REPO_NAME=$(echo "${REPO}" | cut -d / -f 5)
+    REPO_NAME_HASH="${REPO_NAME}-${HASH}"
 
-    # need a layer in the file structure that prevents
-    # two repos with the same name from colliding
-    mkdir -p "${REPO_NAME}-${HASH}"
+    # Use repo name and hash, but not e.g. owner because we want
+    # repos that are different but have the same name to be treated
+    # as different repos, but forks with the same content to be skipped
+    # TODO: consider just using hash, to skip hard forks?
+    mkdir -p "${REPO_NAME_HASH}"
 
-    pushd "${REPO_NAME}-${HASH}" || exit 5
+    pushd "${REPO_NAME_HASH}" || exit 5
     
     if [ ! -d "${REPO_NAME}" ]; then
         # this environment variable prevents git from prompting for
@@ -163,22 +198,22 @@ do
     
     popd || exit 5
 
-    RESULT_LOG="${ORIGIN_PWD}/${OUTDIR}-results/${REPO_NAME}-${HASH}-wpi.log"
+    RESULT_LOG="${OUTDIR}-results/${REPO_NAME_HASH}-wpi.log"
     touch "${RESULT_LOG}"
 
-    "${ORIGIN_PWD}/configure-and-exec-dljc.sh" -d "${REPO_FULLPATH}" -c "${CHECKERS}" -l "${CHECKER_LIB}" -q "${QUALS}" -s "${STUBS}" -u "${USER}" -t "${TOUT}" &> "${RESULT_LOG}"
+    "${SCRIPTDIR}/configure-and-exec-dljc.sh" -d "${REPO_FULLPATH}" -c "${CHECKERS}" -l "${CHECKER_LIB}" -q "${QUALS}" -s "${STUBS}" -u "${USER}" -t "${TOUT}" &> "${RESULT_LOG}"
 
     popd || exit 5
 
     # if the result is unusable, we don't need it for data analysis and we can
     # delete it right away
     if [ -f "${REPO_FULLPATH}/.unusable" ]; then
-        rm -rf "${REPO_NAME}-${HASH}" &
+        rm -rf "${REPO_NAME_HASH}" &
     else
         cat "${REPO_FULLPATH}/dljc-out/wpi.log" >> "${RESULT_LOG}"
     fi
 
-    cd "${ORIGIN_PWD}" || exit 5
+    cd "${OUTDIR}" || exit 5
     
 done <"${INLIST}"
 
@@ -192,8 +227,10 @@ unaccounted_for=$(grep -Zvl "no build file found for" "${OUTDIR}-results/*.log" 
 
 javafiles=$(grep -oh "\S*\.java " "${unaccounted_for}")
 
-if [ ! -f cloc-1.80.pl ]; then
+if [ ! -f "${SCRIPTDIR}/../cloc-1.80.pl" ]; then
+    pushd "${SCRIPTDIR}/.." || exit 5
     wget "https://github.com/AlDanial/cloc/releases/download/1.80/cloc-1.80.pl"
+    popd || exit 5
 fi
 
-perl cloc-1.80.pl --report="${OUTDIR}-results/loc.txt" "${javafiles}"
+perl "${SCRIPTDIR}/../cloc-1.80.pl" --report="${OUTDIR}-results/loc.txt" "${javafiles}"

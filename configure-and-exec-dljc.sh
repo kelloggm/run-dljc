@@ -34,23 +34,40 @@ done
 
 # check required arguments and environment variables:
 
-# JAVA_HOME must point to a Java 8 JDK for this script to work
-if [ "x${JAVA_HOME}" = "x" ]; then
-    echo "JAVA_HOME is not set; it must be set to a Java 8 JDK"
+if [ "x${JAVA8_HOME}" = "x" ]; then
+    echo "JAVA8_HOME must be set to a Java 8 JDK for this script to succeed"
     exit 1
 fi
 
-# testing for JAVA11_HOME, not an unintentional reference to JAVA8_HOME
-# shellcheck disable=SC2153
+if [ ! -d "${JAVA8_HOME}" ]; then
+    echo "JAVA8_HOME is set to a non-existant directory. Check that ${JAVA8_HOME} exists."
+    exit 1
+fi
+
 if [ "x${JAVA11_HOME}" = "x" ]; then
-    echo "JAVA11_HOME is not set; it must be set to a Java 11 JDK"
+    echo "JAVA11_HOME must be set to a Java 11 JDK for this script to succeed"
     exit 1
 fi
 
-JAVA8_HOME="${JAVA_HOME}"
+if [ ! -d "${JAVA11_HOME}" ]; then
+    echo "JAVA11_HOME is set to a non-existant directory. Check that ${JAVA11_HOME} exists."
+    exit 1
+fi
+
+JAVA_HOME="${JAVA11_HOME}"
 
 if [ "x${CHECKERFRAMEWORK}" = "x" ]; then
     echo "CHECKERFRAMEWORK is not set; it must be set to a locally-built Checker Framework. Please clone and build github.com/typetools/checker-framework"
+    exit 2
+fi
+
+if [ ! -d "${CHECKERFRAMEWORK}" ]; then
+    echo "CHECKERFRAMEWORK is set to a non-existant directory. Check that ${CHECKERFRAMEWORK} exists."
+    exit 2
+fi
+
+if [ "x${CHECKERS}" = "x" ]; then
+    echo "you must specify at least one checker using the -c argument"
     exit 2
 fi
 
@@ -60,25 +77,34 @@ if [ "x${DLJC}" = "x" ]; then
 fi
 
 if [ ! -d "${DIR}" ]; then
-    echo "configure-and-exec-dljc.sh called on invalid directory: ${DIR}. Please supply a valid directory's absolute path."
+    echo "configure-and-exec-dljc.sh called on invalid directory: ${DIR}. Please supply an existing directory's absolute path."
     exit 4
 fi
 
 function configure_and_exec_dljc {
 
-  USABLE="yes"
   if [ -f build.gradle ]; then
-      chmod +x gradlew
-      BUILD_CMD="./gradlew clean compileJava -g .gradle -Dorg.gradle.java.home=${JAVA_HOME}"
-      CLEAN_CMD="./gradlew clean -g .gradle -Dorg.gradle.java.home=${JAVA_HOME}"
+      if [ -f gradlew ]; then
+	  chmod +x gradlew
+	  GRADLE_EXEC="./gradlew"
+      else
+	  GRADLE_EXEC="gradle"
+      fi
+      BUILD_CMD="${GRADLE_EXEC} clean compileJava -g .gradle -Dorg.gradle.java.home=${JAVA_HOME}"
+      CLEAN_CMD="${GRADLE_EXEC} clean -g .gradle -Dorg.gradle.java.home=${JAVA_HOME}"
   elif [ -f pom.xml ]; then
+      if [ -f mvnw ]; then
+	  MVN_EXEC="./mvnw"
+      else
+	  MVN_EXEC="mvn"
+      fi
       # if running on java 8, you must add /jre to the end of this Maven command
       if [ "${JAVA_HOME}" = "${JAVA8_HOME}" ]; then
-          BUILD_CMD="mvn clean compile -Djava.home=${JAVA_HOME}/jre"
-          CLEAN_CMD="mvn clean -Djava.home=${JAVA_HOME}/jre"
+          BUILD_CMD="${MVN_EXEC} clean compile -Djava.home=${JAVA_HOME}/jre"
+          CLEAN_CMD="${MVN_EXEC} clean -Djava.home=${JAVA_HOME}/jre"
       else
-          BUILD_CMD="mvn clean compile -Djava.home=${JAVA_HOME}"
-          CLEAN_CMD="mvn clean -Djava.home=${JAVA_HOME}"
+          BUILD_CMD="${MVN_EXEC} clean compile -Djava.home=${JAVA_HOME}"
+          CLEAN_CMD="${MVN_EXEC} clean -Djava.home=${JAVA_HOME}"
       fi
   else
       echo "no build file found for ${REPO_NAME}; not calling DLJC"
@@ -86,11 +112,8 @@ function configure_and_exec_dljc {
       return
   fi
     
-  DLJC_CMD="${DLJC} -t wpi"
-  if [ ! "x${CHECKERS}" = "x" ]; then
-      TMP="${DLJC_CMD} --checker ${CHECKERS}"
-      DLJC_CMD="${TMP}"
-  fi
+  DLJC_CMD="${DLJC} -t wpi --checker ${CHECKERS}"
+
   if [ ! "x${CHECKER_LIB}" = "x" ]; then
       TMP="${DLJC_CMD} --lib ${CHECKER_LIB}"
       DLJC_CMD="${TMP}"
@@ -109,7 +132,6 @@ function configure_and_exec_dljc {
   if [ ! "x${TIMEOUT}" = "x" ]; then
       TMP="${DLJC_CMD}"
       DLJC_CMD="timeout ${TIMEOUT} ${TMP}"
-      echo "setting timeout to ${TIMEOUT}"
   fi
 
   TMP="${DLJC_CMD} -- ${BUILD_CMD}"
