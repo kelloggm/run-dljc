@@ -34,6 +34,8 @@ done
 
 # check required arguments and environment variables:
 
+# testing for JAVA8_HOME, not an unintentional reference to JAVA_HOME
+# shellcheck disable=SC2153
 if [ "x${JAVA8_HOME}" = "x" ]; then
     echo "JAVA8_HOME must be set to a Java 8 JDK for this script to succeed"
     exit 1
@@ -44,6 +46,8 @@ if [ ! -d "${JAVA8_HOME}" ]; then
     exit 1
 fi
 
+# testing for JAVA11_HOME, not an unintentional reference to JAVA_HOME
+# shellcheck disable=SC2153
 if [ "x${JAVA11_HOME}" = "x" ]; then
     echo "JAVA11_HOME must be set to a Java 11 JDK for this script to succeed"
     exit 1
