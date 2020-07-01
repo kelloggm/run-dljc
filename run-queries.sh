@@ -74,7 +74,7 @@ for i in $(seq "${page_count}"); do
     elif [ "${status_code}" -ne 200 ]; then
         echo "GitHub query failed, last response:"
         cat "${curl_output_file}"
-        rm -rf "${curl_output_file}"
+        rm -f "${curl_output_file}"
         exit 1
     fi
     # this removes projects that are
@@ -95,7 +95,7 @@ for i in $(seq "${page_count}"); do
     | grep -v "AndroidSDKSources" >> "${tempfile}"
 done
 
-rm -rf "${curl_output_file}"
+rm -f "${curl_output_file}"
 
 sort -u -o "${tempfile}" "${tempfile}"
 
