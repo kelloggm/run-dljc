@@ -47,7 +47,7 @@
 # -t timeout : the timeout to use, in seconds
 #
 
-while getopts "c:l:s:o:i:q:w:t:" opt; do
+while getopts "c:l:s:o:i:q:u:t:" opt; do
   case $opt in
     c) CHECKERS="$OPTARG"
        ;;
@@ -105,16 +105,16 @@ if [ ! -d do-like-javac ]; then
     git clone https://github.com/kelloggm/do-like-javac
 fi
 
-PWD=`pwd`
+PWD=$(pwd)
 
 DLJC=${PWD}/do-like-javac/dljc
     
 PATH=${JAVA_HOME}/bin:${PATH}
 
-mkdir ${OUTDIR} || true
-mkdir ${OUTDIR}-results || true
+mkdir "${OUTDIR}" || true
+mkdir "${OUTDIR}-results" || true
 
-pushd ${OUTDIR}
+pushd "${OUTDIR}" || exit
 
 function configure_and_exec_dljc {
 
@@ -125,6 +125,7 @@ function configure_and_exec_dljc {
       CLEAN_CMD="./gradlew clean -g .gradle -Dorg.gradle.java.home=${JAVA_HOME}"
   elif [ -f pom.xml ]; then
       # if running on java 8, you must add /jre to the end of this Maven command
+      # shellcheck disable=SC2153
       if [ "${JAVA_HOME}" = "${JAVA8_HOME}" ]; then
           BUILD_CMD="mvn clean compile -Djava.home=${JAVA_HOME}/jre"
           CLEAN_CMD="mvn clean -Djava.home=${JAVA_HOME}/jre"
@@ -137,62 +138,57 @@ function configure_and_exec_dljc {
   fi
     
   if [ "${BUILD_CMD}" = "not found" ]; then
-      echo "no build file found for ${REPO_NAME}; not calling DLJC" > ../../../${OUTDIR}-results/${REPO_NAME}-wpi.log 
+      echo "no build file found for ${REPO_NAME}; not calling DLJC" > "../../../${OUTDIR}-results/${REPO_NAME}-wpi.log"
   else
-      DLJC_CMD="${DLJC} -t wpi --cleanCmd \"${CLEAN_CMD}\""
+      DLJC_CMD=("${DLJC}" -t wpi --cleanCmd "\"${CLEAN_CMD}\"")
       if [ ! "x${CHECKERS}" = "x" ]; then
-	  TMP="${DLJC_CMD} --checker ${CHECKERS}"
-          DLJC_CMD="${TMP}"
+          DLJC_CMD+=(--checker "${CHECKERS}")
       fi
       if [ ! "x${CHECKER_LIB}" = "x" ]; then
-	  TMP="${DLJC_CMD} --lib ${CHECKER_LIB}"
-	  DLJC_CMD="${TMP}"
+          DLJC_CMD+=(--lib "${CHECKER_LIB}")
       fi
       
       if [ ! "x${STUBS}" = "x" ]; then
-	  TMP="${DLJC_CMD} --stubs ${STUBS}"
-	  DLJC_CMD="${TMP}"
+          DLJC_CMD+=(--stubs "${STUBS}")
       fi
       
       if [ ! "x${QUALS}" = "x" ]; then
-	  TMP="${DLJC_CMD} --quals ${QUALS}"
-	  DLJC_CMD="${TMP}"
+          DLJC_CMD+=(--quals "${QUALS}")
       fi
       
       if [ ! "x${TOUT}" = "x" ]; then
-          TMP="${DLJC_CMD}"
-          DLJC_CMD="timeout ${TOUT} ${TMP}"
+          DLJC_CMD=(timeout "${TOUT}" "${DLJC_CMD[@]}")
           echo "setting timeout to ${TOUT}"
       fi
       
-      TMP="${DLJC_CMD} -- ${BUILD_CMD}"
-      DLJC_CMD="${TMP}"
+      DLJC_CMD+=(-- "${BUILD_CMD}")
       
       # ensure the project is clean before invoking DLJC
-      eval ${CLEAN_CMD} < /dev/null
+      eval "${CLEAN_CMD}" < /dev/null
 
-      echo ${DLJC_CMD}
+      echo "${DLJC_CMD[@]}"
       
-      eval ${DLJC_CMD} < /dev/null
+      eval "${DLJC_CMD[@]}" < /dev/null
       
       if [[ $? -eq 124 ]]; then
           echo "dljc timed out for ${REPO_NAME}"
-          echo "dljc timed out for ${REPO_NAME}" > ../../../${OUTDIR}-results/${REPO_NAME}-wpi.log
+          echo "dljc timed out for ${REPO_NAME}" > "../../../${OUTDIR}-results/${REPO_NAME}-wpi.log"
 	  USABLE="no"
       else 
           if [ -f dljc-out/wpi.log ]; then
-              cp dljc-out/wpi.log ../../../${OUTDIR}-results/${REPO_NAME}-wpi.log
-              echo "${REPO},${HASH}" >> ../../../${OUTDIR}-results/interesting-results.csv
+              cp dljc-out/wpi.log "../../../${OUTDIR}-results/${REPO_NAME}-wpi.log"
+              echo "${REPO},${HASH}" >> "../../../${OUTDIR}-results/interesting-results.csv"
 	      USABLE="yes"
           else
               # if this last run was under Java 11, try to run
               # under Java 8 instead
+              # shellcheck disable=SC2153
               if [ "${JAVA_HOME}" = "${JAVA11_HOME}" ]; then
                   export JAVA_HOME="${JAVA8_HOME}"
                   echo "couldn't build using Java 11; trying Java 8"
                   configure_and_exec_dljc
               else
-                  echo "dljc could not run the build successfully" > ../../../${OUTDIR}-results/${REPO_NAME}-wpi.log
+                  echo "dljc could not run the build successfully" > "../../../${OUTDIR}-results/${REPO_NAME}-wpi.log"
 		  USABLE="no"
               fi
           fi
@@ -205,69 +201,69 @@ while IFS='' read -r line || [ "$line" ]
 do    
     REPOHASH=${line}
 
-    REPO=`echo ${REPOHASH} | awk '{print $1}'`
-    HASH=`echo ${REPOHASH} | awk '{print $2}'`
+    REPO=$(echo "${REPOHASH}" | awk '{print $1}')
+    HASH=$(echo "${REPOHASH}" | awk '{print $2}')
 
-    REPO_NAME=`echo ${REPO} | cut -d / -f 5`
+    REPO_NAME=$(echo "${REPO}" | cut -d / -f 5)
 
     # need a layer in the file structure that prevents
     # two repos with the same name from colliding
-    if [ ! -d ${REPO_NAME}-${HASH} ]; then
-        mkdir ${REPO_NAME}-${HASH}
+    if [ ! -d "${REPO_NAME}-${HASH}" ]; then
+        mkdir "${REPO_NAME}-${HASH}"
     fi
 
-    pushd ${REPO_NAME}-${HASH}
+    pushd "${REPO_NAME}-${HASH}" || exit
     
-    if [ ! -d ${REPO_NAME} ]; then
+    if [ ! -d "${REPO_NAME}" ]; then
         # this environment variable prevents git from prompting for username/password
         # if the repository no longer exists
-        GIT_TERMINAL_PROMPT=0 git clone ${REPO}
+        GIT_TERMINAL_PROMPT=0 git clone "${REPO}"
     else
-        rm -rf ${REPO_NAME}/dljc-out
+        rm -rf "${REPO_NAME}/dljc-out"
     fi
 
     # if the above clone command failed for whatever reason, create an
     # empty directory so that the rest of the commands fail gracefully
     # without messing with the directory structure
-    if [ ! -d ${REPO_NAME} ]; then
-        mkdir ${REPO_NAME}
+    if [ ! -d "${REPO_NAME}" ]; then
+        mkdir "${REPO_NAME}"
     fi
 
-    pushd ${REPO_NAME}
+    pushd "${REPO_NAME}" || exit
 
-    git checkout ${HASH}
+    git checkout "${HASH}"
 
-    OWNER=`echo ${REPO} | cut -d / -f 4`
+    OWNER=$(echo "${REPO}" | cut -d / -f 4)
 
     if [ "${OWNER}" = "${USER}" ]; then
-        ORIGIN=`echo ${REPOHASH} | awk '{print $3}'`
-        git remote add unannotated ${ORIGIN}
+        ORIGIN=$(echo "${REPOHASH}" | awk '{print $3}')
+        git remote add unannotated "${ORIGIN}"
     fi
     
     configure_and_exec_dljc
  
-    popd 
-    popd
+    popd || exit
+    popd || exit
 
-    cd ${PWD}
+    cd "${PWD}" || exit
 
     # if the result is unusable, we don't need it for data analysis and we can
     # delete it right away
     if [ ${USABLE} = "no" ]; then
-	rm -rf ${REPO_NAME}-${HASH} &
+	rm -rf "${REPO_NAME}-${HASH}" &
     fi
     
-done <${INLIST}
+done < "${INLIST}"
 
-popd
+popd || exit
 
-unaccounted_for=`grep -Zvl "no build file found for" ${OUTDIR}-results/*.log \
+unaccounted_for=$(grep -Zvl "no build file found for" "${OUTDIR}-results/*.log" \
     | xargs -0 grep -Zvl "dljc could not run the Checker Framework" \
     | xargs -0 grep -Zvl "dljc could not run the build successfully" \
     | xargs -0 grep -Zvl "dljc timed out for" \
-    | xargs -0 echo`
+    | xargs -0 echo)
 
-javafiles=`grep -oh "\S*\.java " ${unaccounted_for}`
+javafiles=$(grep -oh "\S*\.java " "${unaccounted_for}")
 
 # echo ${javafiles}
 
@@ -275,4 +271,4 @@ if [ ! -f cloc-1.80.pl ]; then
     wget "https://github.com/AlDanial/cloc/releases/download/1.80/cloc-1.80.pl"
 fi
 
-perl cloc-1.80.pl --report=${OUTDIR}-results/loc.txt ${javafiles}
+perl cloc-1.80.pl --report="${OUTDIR}"-results/loc.txt "${javafiles}"
