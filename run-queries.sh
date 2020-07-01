@@ -51,7 +51,6 @@ for i in $(seq "${page_count}"); do
     fi
 
     full_query='https://api.github.com/search/code?q='${query}'&page='${i}
-    curl_output_file=$(mktemp "curl-output-XXX.txt")
     for tries in $(seq ${query_tries}); do
         status_code=$(curl -s \
             -H "Authorization: token $(cat git-personal-access-token)" \
@@ -75,6 +74,7 @@ for i in $(seq "${page_count}"); do
     elif [ "${status_code}" -ne 200 ]; then
         echo "GitHub query failed, last response:"
         cat "${curl_output_file}"
+        rm -rf "${curl_output_file}"
         exit 1
     fi
     # this removes projects that are
@@ -94,6 +94,8 @@ for i in $(seq "${page_count}"); do
     | grep -v "apache-harmony" \
     | grep -v "AndroidSDKSources" >> "${tempfile}"
 done
+
+rm -rf "${curl_output_file}"
 
 sort -u -o "${tempfile}" "${tempfile}"
 
