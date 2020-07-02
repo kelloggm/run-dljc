@@ -59,7 +59,9 @@ for i in $(seq "${page_count}"); do
             -o "${curl_output_file}" \
             "${full_query}")
 
-        # 200 and 422 are both non-error codes.
+        # 200 and 422 are both non-error codes. Failures are usually due to
+        # triggering the abuse detection mechanism for sending too many
+        # requests, so we add a delay when this happens.
         if [ "${status_code}" -eq 200 ] || [ "${status_code}" -eq 422 ]; then
             break
         elif [ "${tries}" -lt $((query_tries - 1)) ]; then
@@ -68,7 +70,7 @@ for i in $(seq "${page_count}"); do
     done
 
     # GitHub only returns the first 1000 results. Requests pass this limit
-    # return 422.
+    # return 422 so stop making requests in this case.
     if [ "${status_code}" -eq 422 ]; then
         break;
     elif [ "${status_code}" -ne 200 ]; then
