@@ -16,6 +16,8 @@
 # $2 is the number of pages to search. default 1
 
 query_file=$1
+# Number of times to retry a GitHub search query.
+query_tries=5
 
 if [ -z "${query_file}" ]; then
     echo "you must have provide a query file as the first argument"
@@ -39,9 +41,44 @@ rm -f /tmp/github-hash-results.txt
 hashfile=$(mktemp /tmp/github-hash-results-XXX.txt)
 #trap "rm -f ${hashfile}" 0 2 3 15
 
+curl_output_file=$(mktemp curl-output-XXX.txt --tmpdir)
+
 # find the repos
 for i in $(seq "${page_count}"); do
+    # GitHub only allows 30 searches per minute, so add a delay to each request.
+    if [ "${i}" -gt 1 ]; then
+        sleep 5
+    fi
+
     full_query='https://api.github.com/search/code?q='${query}'&page='${i}
+    for tries in $(seq ${query_tries}); do
+        status_code=$(curl -s \
+            -H "Authorization: token $(cat git-personal-access-token)" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -w "%{http_code}" \
+            -o "${curl_output_file}" \
+            "${full_query}")
+
+        # 200 and 422 are both non-error codes. Failures are usually due to
+        # triggering the abuse detection mechanism for sending too many
+        # requests, so we add a delay when this happens.
+        if [ "${status_code}" -eq 200 ] || [ "${status_code}" -eq 422 ]; then
+            break
+        elif [ "${tries}" -lt $((query_tries - 1)) ]; then
+            sleep 20
+        fi
+    done
+
+    # GitHub only returns the first 1000 results. Requests pass this limit
+    # return 422 so stop making requests in this case.
+    if [ "${status_code}" -eq 422 ]; then
+        break;
+    elif [ "${status_code}" -ne 200 ]; then
+        echo "GitHub query failed, last response:"
+        cat "${curl_output_file}"
+        rm -f "${curl_output_file}"
+        exit 1
+    fi
     # this removes projects that are
     # 1. owned by me
     # 2. are hard-forks of android-libcore, because they're very big and
@@ -50,10 +87,7 @@ for i in $(seq "${page_count}"); do
     # 4. are owned by the user AndroidSDKSources, because those
     #    are all copies of (surprise!) the android SDK, which we
     #    don't care about for the same reasons.
-    curl -sH "Authorization: token $(cat git-personal-access-token)" \
-              "Accept: application/vnd.github.v3+json" \
-             "${full_query}" \
-        | grep "        \"html_url" \
+    grep "        \"html_url" < "${curl_output_file}" \
         | grep -v "          " \
         | sort | uniq \
         | cut -d \" -f 4 \
@@ -62,6 +96,8 @@ for i in $(seq "${page_count}"); do
     | grep -v "apache-harmony" \
     | grep -v "AndroidSDKSources" >> "${tempfile}"
 done
+
+rm -f "${curl_output_file}"
 
 sort -u -o "${tempfile}" "${tempfile}"
 
