@@ -34,18 +34,7 @@
 #             then each line owned by that user must be followed by the
 #             original github repository.
 #
-# -c checkers : a comma-separated list of typecheckers to run
-#
 # The meaning of each optional argument is:
-#
-# -l lib : a colon-separated list of jar files which should be added to the
-#          java classpath when doing typechecking. Use this for the dependencies
-#          of any custom typecheckers.
-#
-# -q quals : a colon-separated list of the jar files containing annotations used
-#            by custom checkers
-#
-# -s stubs : a colon-separated list of stub files
 #
 # -u user : the GitHub user to consider the "owner" for repositories that have
 #           been forked and modified. These repositories must have a third entry
@@ -53,17 +42,16 @@
 #
 # -t timeout : the timeout to use, in seconds
 #
+# After these arguments, any remaining arguments are passed directly
+# to DLJC without modification. See the documentation of DLJC for
+# an explanation of these arguments: https://github.com/kelloggm/do-like-javac
+#
+# At least one such argument is required: --checker, which tells DLJC what
+# typechecker to run.
+#
 
-while getopts "c:l:s:o:i:q:u:t:" opt; do
+while getopts "o:i:u:t:" opt; do
   case $opt in
-    c) CHECKERS="$OPTARG"
-       ;;
-    l) CHECKER_LIB="$OPTARG"
-       ;;
-    q) QUALS="$OPTARG"
-       ;;
-    s) STUBS="$OPTARG"
-       ;;
     o) OUTDIR="$OPTARG"
        ;;
     i) INLIST="$OPTARG"
@@ -72,10 +60,14 @@ while getopts "c:l:s:o:i:q:u:t:" opt; do
        ;;
     t) TOUT="$OPTARG"
        ;;        
-    \?) echo "Invalid option -$OPTARG" >&2
+    \?) # the remainder of the arguments will be passed to DLJC directly
        ;;
   esac
 done
+
+# shift so that the other arguments (that should be passed to dljc) are all
+# that's in $@
+shift $(( OPTIND - 1 ))
 
 # check required arguments and environment variables:
 
@@ -106,11 +98,6 @@ fi
 
 if [ ! -d "${CHECKERFRAMEWORK}" ]; then
     echo "CHECKERFRAMEWORK is set to a non-existant directory. Check that ${CHECKERFRAMEWORK} exists."
-    exit 2
-fi
-
-if [ "x${CHECKERS}" = "x" ]; then
-    echo "you must specify at least one checker using the -c argument"
     exit 2
 fi
 
@@ -201,7 +188,7 @@ do
     RESULT_LOG="${OUTDIR}-results/${REPO_NAME_HASH}-wpi.log"
     touch "${RESULT_LOG}"
 
-    "${SCRIPTDIR}/configure-and-exec-dljc.sh" -d "${REPO_FULLPATH}" -c "${CHECKERS}" -l "${CHECKER_LIB}" -q "${QUALS}" -s "${STUBS}" -u "${USER}" -t "${TOUT}" &> "${RESULT_LOG}"
+    "${SCRIPTDIR}/configure-and-exec-dljc.sh" -d "${REPO_FULLPATH}" -u "${USER}" -t "${TOUT}" "$@" &> "${RESULT_LOG}"
 
     popd || exit 5
 

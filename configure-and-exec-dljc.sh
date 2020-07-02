@@ -9,28 +9,26 @@
 #
 # Input differences compared to run-dljc.sh:
 # -i and -o are not valid options
-# new option -d: the directory containing the target project
+# new required option -d: the directory containing the target project
+#
+# The DLJC environment variable must point to the dljc script.
 
-while getopts "c:l:q:s:d:u:t:" opt; do
+while getopts "d:u:t:" opt; do
   case $opt in
-    c) CHECKERS="$OPTARG"
-       ;;
-    l) CHECKER_LIB="$OPTARG"
-       ;;
-    q) QUALS="$OPTARG"
-       ;;
-    s) STUBS="$OPTARG"
-       ;;
     d) DIR="$OPTARG"
        ;;
     u) USER="$OPTARG"
        ;;
     t) TIMEOUT="$OPTARG"
        ;;        
-    \?) echo "Invalid option -$OPTARG" >&2
+    \?) # echo "Invalid option -$OPTARG" >&2
        ;;
   esac
 done
+
+# shift so that the other arguments (that should be passed to dljc) are all
+# that's in $@
+shift $(( OPTIND - 1 ))
 
 # check required arguments and environment variables:
 
@@ -67,11 +65,6 @@ fi
 
 if [ ! -d "${CHECKERFRAMEWORK}" ]; then
     echo "CHECKERFRAMEWORK is set to a non-existant directory. Check that ${CHECKERFRAMEWORK} exists."
-    exit 2
-fi
-
-if [ "x${CHECKERS}" = "x" ]; then
-    echo "you must specify at least one checker using the -c argument"
     exit 2
 fi
 
@@ -116,29 +109,14 @@ function configure_and_exec_dljc {
       return
   fi
     
-  DLJC_CMD="${DLJC} -t wpi --checker ${CHECKERS}"
-
-  if [ ! "x${CHECKER_LIB}" = "x" ]; then
-      TMP="${DLJC_CMD} --lib ${CHECKER_LIB}"
-      DLJC_CMD="${TMP}"
-  fi
-
-  if [ ! "x${STUBS}" = "x" ]; then
-      TMP="${DLJC_CMD} --stubs ${STUBS}"
-      DLJC_CMD="${TMP}"
-  fi
-
-  if [ ! "x${QUALS}" = "x" ]; then
-      TMP="${DLJC_CMD} --quals ${QUALS}"
-      DLJC_CMD="${TMP}"
-  fi
+  DLJC_CMD="${DLJC} -t wpi"
 
   if [ ! "x${TIMEOUT}" = "x" ]; then
       TMP="${DLJC_CMD}"
       DLJC_CMD="timeout ${TIMEOUT} ${TMP}"
   fi
 
-  TMP="${DLJC_CMD} -- ${BUILD_CMD}"
+  TMP="${DLJC_CMD} $* -- ${BUILD_CMD}"
   DLJC_CMD="${TMP}"
 
   # ensure the project is clean before invoking DLJC
@@ -174,7 +152,7 @@ function configure_and_exec_dljc {
 
 pushd "${DIR}" || exit 1
 
-configure_and_exec_dljc
+configure_and_exec_dljc "$@"
 
 # support run-dljc.sh's ability to delete unusable projects automatically
 if [ "${USABLE}" = "no" ]; then
