@@ -35,24 +35,24 @@ shift $(( OPTIND - 1 ))
 # testing for JAVA8_HOME, not an unintentional reference to JAVA_HOME
 # shellcheck disable=SC2153
 if [ "x${JAVA8_HOME}" = "x" ]; then
-    echo "JAVA8_HOME must be set to a Java 8 JDK for this script to succeed"
+    echo "JAVA8_HOME must be set to a Java 8 JDK"
     exit 1
 fi
 
 if [ ! -d "${JAVA8_HOME}" ]; then
-    echo "JAVA8_HOME is set to a non-existant directory. Check that ${JAVA8_HOME} exists."
+    echo "JAVA8_HOME is set to a non-existent directory ${JAVA8_HOME}"
     exit 1
 fi
 
 # testing for JAVA11_HOME, not an unintentional reference to JAVA_HOME
 # shellcheck disable=SC2153
 if [ "x${JAVA11_HOME}" = "x" ]; then
-    echo "JAVA11_HOME must be set to a Java 11 JDK for this script to succeed"
+    echo "JAVA11_HOME must be set to a Java 11 JDK"
     exit 1
 fi
 
 if [ ! -d "${JAVA11_HOME}" ]; then
-    echo "JAVA11_HOME is set to a non-existant directory. Check that ${JAVA11_HOME} exists."
+    echo "JAVA11_HOME is set to a non-existent directory ${JAVA11_HOME}"
     exit 1
 fi
 
@@ -64,13 +64,18 @@ if [ "x${CHECKERFRAMEWORK}" = "x" ]; then
 fi
 
 if [ ! -d "${CHECKERFRAMEWORK}" ]; then
-    echo "CHECKERFRAMEWORK is set to a non-existant directory. Check that ${CHECKERFRAMEWORK} exists."
+    echo "CHECKERFRAMEWORK is set to a non-existent directory ${CHECKERFRAMEWORK}"
     exit 2
 fi
 
 if [ "x${DLJC}" = "x" ]; then
     echo "DLJC is not set; it must be set to the dljc executable. Please checkout github.com/kelloggm/do-like-javac and point the DLJC environment variable to its dljc script"
     exit 3
+fi
+
+if [ ! -f "${DLJC}" ]; then
+    echo "DLJC is set to a non-existent file ${DLJC}"
+    exit 2
 fi
 
 if [ ! -d "${DIR}" ]; then
@@ -91,6 +96,7 @@ function configure_and_exec_dljc {
       CLEAN_CMD="${GRADLE_EXEC} clean -g .gradle -Dorg.gradle.java.home=${JAVA_HOME}"
   elif [ -f pom.xml ]; then
       if [ -f mvnw ]; then
+	  chmod +x mvnw
 	  MVN_EXEC="./mvnw"
       else
 	  MVN_EXEC="mvn"

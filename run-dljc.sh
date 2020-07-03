@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # This script runs the Checker Framework's whole-program inference on each of a list of projects.
-# To create a list of projects, see run-queries.sh or create one by hand.
 
 ### Usage
 
@@ -10,10 +9,11 @@
 # - Make a file containing a list of git repositories and hashes. Each line of
 #   the file should contain one repository and one hash, and may optionally
 #   contain a third repository (see the -i argument description below).
+#   run-queries.sh creates such a list of projects.
 # - Ensure that your JAVA8_HOME variable points to a Java 8 JDK
 # - Ensure that your JAVA11_HOME variable points to a Java 11 JDK
 # - Ensure that your CHECKERFRAMEWORK variable points to a built copy of the Checker Framework
-# - Other dependencies: perl, python2.7 (for dljc), awk, git, mvn, gradle
+# - Other dependencies: perl, python2.7 (for dljc), awk, git, mvn, gradle, wget, curl
 # - Run the script. There is an example invocation in
 #   no-literal-securerandom-exact-dljc-cmd.sh
 #
@@ -31,8 +31,8 @@
 #             on the number of slashes, so excluding https:// is an error.
 #             
 #             If the repository's owner is the user specified by the -u flag,
-#             then each line owned by that user must be followed by the
-#             original github repository.
+#             then each line owned by that user must contain a third element,
+#             the original github repository.
 #
 # The meaning of each optional argument is:
 #
@@ -45,7 +45,6 @@
 # After these arguments, any remaining arguments are passed directly
 # to DLJC without modification. See the documentation of DLJC for
 # an explanation of these arguments: https://github.com/kelloggm/do-like-javac
-#
 # At least one such argument is required: --checker, which tells DLJC what
 # typechecker to run.
 #
@@ -72,22 +71,22 @@ shift $(( OPTIND - 1 ))
 # check required arguments and environment variables:
 
 if [ "x${JAVA8_HOME}" = "x" ]; then
-    echo "JAVA8_HOME must be set to a Java 8 JDK for this script to succeed"
+    echo "JAVA8_HOME must be set to a Java 8 JDK"
     exit 1
 fi
 
 if [ ! -d "${JAVA8_HOME}" ]; then
-    echo "JAVA8_HOME is set to a non-existant directory. Check that ${JAVA8_HOME} exists."
+    echo "JAVA8_HOME is set to a non-existent directory ${JAVA8_HOME}"
     exit 1
 fi
 
 if [ "x${JAVA11_HOME}" = "x" ]; then
-    echo "JAVA11_HOME must be set to a Java 11 JDK for this script to succeed"
+    echo "JAVA11_HOME must be set to a Java 11 JDK"
     exit 1
 fi
 
 if [ ! -d "${JAVA11_HOME}" ]; then
-    echo "JAVA11_HOME is set to a non-existant directory. Check that ${JAVA11_HOME} exists."
+    echo "JAVA11_HOME is set to a non-existent directory ${JAVA11_HOME}"
     exit 1
 fi
 
@@ -97,17 +96,17 @@ if [ "x${CHECKERFRAMEWORK}" = "x" ]; then
 fi
 
 if [ ! -d "${CHECKERFRAMEWORK}" ]; then
-    echo "CHECKERFRAMEWORK is set to a non-existant directory. Check that ${CHECKERFRAMEWORK} exists."
+    echo "CHECKERFRAMEWORK is set to a non-existent directory ${CHECKERFRAMEWORK}"
     exit 2
 fi
 
 if [ "x${OUTDIR}" = "x" ]; then
-    echo "you must specify an output directory using the -o argument"
+    echo "You must specify an output directory using the -o argument."
     exit 3
 fi
 
 if [ "x${INLIST}" = "x" ]; then
-    echo "you must specify an input file using the -i argument"
+    echo "You must specify an input file using the -i argument."
     exit 4
 fi
 
@@ -119,7 +118,7 @@ fi
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-# clone\update DLJC
+# clone or update DLJC
 if [ ! -d "${SCRIPTDIR}/../do-like-javac" ]; then
     pushd "${SCRIPTDIR}/.." || exit 5
     git clone https://github.com/kelloggm/do-like-javac
@@ -149,9 +148,9 @@ do
     REPO_NAME=$(echo "${REPO}" | cut -d / -f 5)
     REPO_NAME_HASH="${REPO_NAME}-${HASH}"
 
-    # Use repo name and hash, but not e.g. owner because we want
+    # Use repo name and hash, but not owner.  We want
     # repos that are different but have the same name to be treated
-    # as different repos, but forks with the same content to be skipped
+    # as different repos, but forks with the same content to be skipped.
     # TODO: consider just using hash, to skip hard forks?
     mkdir -p "${REPO_NAME_HASH}"
 

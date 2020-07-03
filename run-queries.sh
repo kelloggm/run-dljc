@@ -66,8 +66,8 @@ for i in $(seq "${page_count}"); do
         fi
     done
 
-    # GitHub only returns the first 1000 results. Requests pass this limit
-    # return 422 so stop making requests in this case.
+    # GitHub only returns the first 1000 results. Requests past this limit
+    # return 422, so stop making requests.
     if [ "${status_code}" -eq 422 ]; then
         break;
     elif [ "${status_code}" -ne 200 ]; then
@@ -108,7 +108,6 @@ do
              "${hash_query}" \
         | grep '^    "sha":' \
         | cut -d \" -f 4 >> "${hashfile}"
-    
 done < "${tempfile}"
 
 paste "${tempfile}" "${hashfile}"

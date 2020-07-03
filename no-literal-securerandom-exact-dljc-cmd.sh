@@ -1,11 +1,11 @@
 #!/bin/sh
 
-## This is an example "one-command with no arguments" script that
-## controls run-dljc.sh. It is copied from the experiments for the
+## This script runs run-dljc.sh with appropriate arguments and
+## environment variables. It is copied from the experiments for the
 ## Continuous Compliance paper. If you want to re-use this script,
 ## you'll have to change environment variables and paths below.  Note
 ## that this script is intended for use with a custom typechecker
-## (i.e.  a typechecker that is not in the main Checker Framework
+## (i.e., a typechecker that is not in the main Checker Framework
 ## distribution).  If your typechecker is in the main Checker
 ## Framework distribution, you should use run-dljc.sh or
 ## configure-and-exec-dljc.sh directly rather than making a copy of
@@ -25,7 +25,7 @@ checkername=no-literal
 repolist=securerandom.list
 
 # the stub files for the checker being used
-custom_stubs='/homes/gws/kelloggm/compliance-experiments/fse20/no-literal-checker/no-literal-checker/stubs'
+custom_stubs=/homes/gws/kelloggm/compliance-experiments/fse20/no-literal-checker/no-literal-checker/stubs
 
 # The qualifier classpath. In a custom checker, this is usually found
 # by running ./gradlew printClasspath in the mychecker-qual subproject.
