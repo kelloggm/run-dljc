@@ -22,7 +22,7 @@ no_cf_percent=$(((no_cf*100)/total))
 
 echo "total repositories: ${total} (100%)"
 echo "no maven or gradle build file: ${no_build_file} (~${no_build_file_percent}%)"
-echo "build failed: ${no_cf} (~${no_cf_percent})"
+echo "build failed: ${no_cf} (~${no_cf_percent}%)"
 echo "timed out: ${timed_out} (~${timed_out_percent}%)"
 echo ""
 echo "timeouts:"
