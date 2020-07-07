@@ -144,7 +144,7 @@ function configure_and_exec_dljc {
           if [ "${JAVA_HOME}" = "${JAVA11_HOME}" ]; then
               export JAVA_HOME="${JAVA8_HOME}"
               echo "couldn't build using Java 11; trying Java 8"
-              configure_and_exec_dljc
+              configure_and_exec_dljc "$@"
               export JAVA_HOME="${JAVA11_HOME}"
           else
               echo "dljc could not run the build successfully"
