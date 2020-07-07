@@ -125,6 +125,9 @@ function configure_and_exec_dljc {
   TMP="${DLJC_CMD} $* -- ${BUILD_CMD}"
   DLJC_CMD="${TMP}"
 
+  # Remove old DLJC output.
+  rm -rf dljc-out
+
   # ensure the project is clean before invoking DLJC
   eval "${CLEAN_CMD}" < /dev/null
 
