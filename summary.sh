@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # This script takes a directory of .log files as input, and produces a summary of the results.
-# Use its output to guide your analysis of the results of running ./run-dljc.sh: you must manually
+# Use its output to guide your analysis of the results of running ./wpi-many.sh: you must manually
 # examine the results of any project that appears in the "unaccounted for" list.
 
 targetdir=$1
@@ -15,6 +15,11 @@ timed_out_list=$(grep -l "dljc timed out for" "${targetdir}/*.log")
 no_build_file=$(grep -cl "no build file found for" "${targetdir}/*.log")
 no_build_file_percent=$(((no_build_file*100)/total))
 
+# "old" and "new" in the below refer to the two different messages that
+# dljc's wpi tool can emit for this kind of failure. At some point while
+# running an early set of these experiments, I realized that the original
+# message wasn't correct, and fixed it. But, for backwards compatibility,
+# this script looks for both messages and combines the counts.
 no_cf_old=$(grep -cl "dljc could not run the Checker Framework" "${targetdir}/*.log")
 no_cf_new=$(grep -cl "dljc could not run the build successfully" "${targetdir}/*.log")
 no_cf=$((no_cf_old+no_cf_new))
@@ -30,11 +35,7 @@ echo ""
 echo "${timed_out_list}" | tr ' ' '\n'
 echo ""
 
-unaccounted_for=$(grep -Zvl "no build file found for" "${targetdir}/*.log" \
-    | xargs -0 grep -Zvl "dljc could not run the Checker Framework" \
-    | xargs -0 grep -Zvl "dljc could not run the build successfully" \
-    | xargs -0 grep -Zvl "dljc timed out for" \
-    | xargs -0 echo)
+unaccounted_for=$(cat "${targetdir}/unaccounted_for.txt")
 
 echo "unaccounted for: "
 echo ""

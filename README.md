@@ -25,6 +25,15 @@ script that serves as an example of how to use `wpi-many.sh` with a
 custom checker.
 
 3. Use `summary.sh` to summarize the logs in the output results directory.
+Use its output to guide your analysis of the results of running ./wpi-many.sh:
+you should manually examine the results of any project that appears in the
+"unaccounted for" list it produces.
+
+4. (Optional) Fork repositories and add annotations or make changes to them.
+Then, supply the -u "$yourGithubId" option to wpi-many.sh when you re-run
+the experiments. wpi-many.sh will use your forked version rather than
+the original. You must modify the input file for wpi-many.sh to indicate
+the location of the original file, as well.
 
 See the documentation of the individual scripts for more information.
 
