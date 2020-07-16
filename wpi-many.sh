@@ -4,7 +4,7 @@
 
 ### Usage
 
-# - Clone the run-dljc repository containing this script on the experimental
+# - Clone the wpi-many repository containing this script on the experimental
 #   machine.
 # - Make a file containing a list of git repositories and hashes. Each line of
 #   the file should contain one repository and one hash, and may optionally
@@ -38,7 +38,7 @@
 #
 # -u user : the GitHub user to consider the "owner" for repositories that have
 #           been forked and modified. These repositories must have a third entry
-#           in the infile indicating their origin. Default is "kelloggm".
+#           in the infile indicating their origin. Default is "$USER".
 #
 # -t timeout : the timeout to use, in seconds
 #
@@ -55,7 +55,7 @@ while getopts "o:i:u:t:" opt; do
        ;;
     i) INLIST="$OPTARG"
        ;;
-    u) USER="$OPTARG"
+    u) SPECIAL_USER="$OPTARG"
        ;;
     t) TOUT="$OPTARG"
        ;;        
@@ -110,8 +110,8 @@ if [ "x${INLIST}" = "x" ]; then
     exit 4
 fi
 
-if [ "x${USER}" = "x" ]; then
-    USER=kelloggm
+if [ "x${SPECIAL_USER}" = "x" ]; then
+    SPECIAL_USER="${USER}"
 fi
 
 ### Script
@@ -120,13 +120,9 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # clone or update DLJC
 if [ ! -d "${SCRIPTDIR}/../do-like-javac" ]; then
-    pushd "${SCRIPTDIR}/.." || exit 5
-    git clone https://github.com/kelloggm/do-like-javac
-    popd || exit 5
+    git -C "${SCRIPTDIR}/.." clone https://github.com/kelloggm/do-like-javac
 else
-    pushd "${SCRIPTDIR}/../do-like-javac" || exit 5
-    git pull
-    popd || exit 5 
+    git -C "${SCRIPTDIR}/../do-like-javac" pull
 fi
 
 export DLJC="${SCRIPTDIR}/../do-like-javac/dljc"
@@ -164,10 +160,10 @@ do
         rm -rf "${REPO_NAME}/dljc-out"
     fi
 
-    # if the above clone command failed for whatever reason, create an
-    # empty directory so that the rest of the commands fail gracefully
-    # without messing with the directory structure
-    mkdir -p "${REPO_NAME}"
+    # skip the rest of the script if cloning isn't successful
+    if [ -d "${REPO_NAME}" ];
+       continue;
+    fi
 
     pushd "${REPO_NAME}" || exit 5
 
@@ -175,7 +171,7 @@ do
 
     OWNER=$(echo "${REPO}" | cut -d / -f 4)
 
-    if [ "${OWNER}" = "${USER}" ]; then
+    if [ "${OWNER}" = "${SPECIAL_USER}" ]; then
         ORIGIN=$(echo "${REPOHASH}" | awk '{print $3}')
         git remote add unannotated "${ORIGIN}"
     fi
@@ -187,7 +183,7 @@ do
     RESULT_LOG="${OUTDIR}-results/${REPO_NAME_HASH}-wpi.log"
     touch "${RESULT_LOG}"
 
-    "${SCRIPTDIR}/configure-and-exec-dljc.sh" -d "${REPO_FULLPATH}" -u "${USER}" -t "${TOUT}" "$@" &> "${RESULT_LOG}"
+    "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -u "${SPECIAL_USER}" -t "${TOUT}" "$@" &> "${RESULT_LOG}"
 
     popd || exit 5
 
@@ -211,12 +207,12 @@ unaccounted_for=$(grep -Zvl "no build file found for" "${OUTDIR}-results/*.log" 
     | xargs -0 grep -Zvl "dljc timed out for" \
     | xargs -0 echo)
 
+echo "${unaccounted_for}" > "${OUTDIR}-results/unaccounted_for.txt"
+
 javafiles=$(grep -oh "\S*\.java " "${unaccounted_for}")
 
-if [ ! -f "${SCRIPTDIR}/../cloc-1.80.pl" ]; then
-    pushd "${SCRIPTDIR}/.." || exit 5
-    wget "https://github.com/AlDanial/cloc/releases/download/1.80/cloc-1.80.pl"
-    popd || exit 5
-fi
+pushd "${SCRIPTDIR}/.." || exit 5
+wget -nc "https://github.com/AlDanial/cloc/releases/download/1.80/cloc-1.80.pl"
+popd || exit 5
 
 perl "${SCRIPTDIR}/../cloc-1.80.pl" --report="${OUTDIR}-results/loc.txt" "${javafiles}"

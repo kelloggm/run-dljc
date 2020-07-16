@@ -27,12 +27,29 @@ repolist=securerandom.list
 # the stub files for the checker being used
 custom_stubs=/homes/gws/kelloggm/compliance-experiments/fse20/no-literal-checker/no-literal-checker/stubs
 
-# The qualifier classpath. In a custom checker, this is usually found
-# by running ./gradlew printClasspath in the mychecker-qual subproject.
+# The qualifier classpath. Usually, this is just the version of checker-qual.jar
+# that your qualifiers depend on and the qual jar for your checker. See the
+# next comment for code that can generate a classpath for you, if your custom
+# checker is more complex.
+#
 custom_quals='/homes/gws/kelloggm/compliance-experiments/fse20/no-literal-checker/no-literal-qual/build/libs/no-literal-qual.jar:/homes/gws/kelloggm/.gradle/caches/modules-2/files-2.1/org.checkerframework/checker-qual/3.1.1/361404eff7f971a296020d47c928905b3b9c5b5f/checker-qual-3.1.1.jar'
 
 # The checker classpath. In a custom checker, this is usually found
 # by running ./gradlew printClasspath in the mychecker-checker subproject.
+#
+# The printClasspath command is usually defined as:
+#
+# task printClasspath {
+#     doLast {
+#         println sourceSets.main.runtimeClasspath.asPath
+#     }
+# }
+#
+# If your custom checker does not define a task, you should copy the
+# above into your build.gradle file. Then, you can run
+# > ./gradlew printClasspath
+# and copy the result below.
+#
 custom_classpath='/homes/gws/kelloggm/compliance-experiments/fse20/no-literal-checker/no-literal-checker/build/classes/java/main:/homes/gws/kelloggm/compliance-experiments/fse20/no-literal-checker/no-literal-checker/build/resources/main:/homes/gws/kelloggm/compliance-experiments/fse20/checker-framework/checker/dist/checker.jar:/homes/gws/kelloggm/compliance-experiments/fse20/no-literal-checker/no-literal-qual/build/libs/no-literal-qual.jar:/homes/gws/kelloggm/.gradle/caches/modules-2/files-2.1/com.google.errorprone/javac/9+181-r4173-1/bdf4c0aa7d540ee1f7bf14d47447aea4bbf450c5/javac-9+181-r4173-1.jar:/homes/gws/kelloggm/.gradle/caches/modules-2/files-2.1/org.checkerframework/checker-qual/3.1.1/361404eff7f971a296020d47c928905b3b9c5b5f/checker-qual-3.1.1.jar'
 
 ## Optionally change these.
