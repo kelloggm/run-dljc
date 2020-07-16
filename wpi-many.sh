@@ -4,7 +4,7 @@
 
 ### Usage
 
-# - Clone the run-dljc repository containing this script on the experimental
+# - Clone the wpi-many repository containing this script on the experimental
 #   machine.
 # - Make a file containing a list of git repositories and hashes. Each line of
 #   the file should contain one repository and one hash, and may optionally
@@ -187,7 +187,7 @@ do
     RESULT_LOG="${OUTDIR}-results/${REPO_NAME_HASH}-wpi.log"
     touch "${RESULT_LOG}"
 
-    "${SCRIPTDIR}/configure-and-exec-dljc.sh" -d "${REPO_FULLPATH}" -u "${USER}" -t "${TOUT}" "$@" &> "${RESULT_LOG}"
+    "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -u "${USER}" -t "${TOUT}" "$@" &> "${RESULT_LOG}"
 
     popd || exit 5
 

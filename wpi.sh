@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # This script performs WPI via dljc on a given project directory.
-# The inputs are similar to run-dljc.sh, which uses this script internally.
-# The only difference is that run-dljc.sh takes a list of projects, while
+# The inputs are similar to wpi-many.sh, which uses this script internally.
+# The only difference is that wpi-many.sh takes a list of projects, while
 # this script operates on a single project at a time.
-# See the documentation of run-dljc.sh for information on the inputs to this
+# See the documentation of wpi-many.sh for information on the inputs to this
 # script.
 #
-# Input differences compared to run-dljc.sh:
+# Input differences compared to wpi-many.sh:
 # -i and -o are not valid options
 # new required option -d: the directory containing the target project
 #
@@ -79,7 +79,7 @@ if [ ! -f "${DLJC}" ]; then
 fi
 
 if [ ! -d "${DIR}" ]; then
-    echo "configure-and-exec-dljc.sh called on invalid directory: ${DIR}. Please supply an existing directory's absolute path."
+    echo "wpi.sh called on invalid directory: ${DIR}. Please supply an existing directory's absolute path."
     exit 4
 fi
 
@@ -163,7 +163,7 @@ pushd "${DIR}" || exit 1
 
 configure_and_exec_dljc "$@"
 
-# support run-dljc.sh's ability to delete unusable projects automatically
+# support wpi-many.sh's ability to delete unusable projects automatically
 if [ "${USABLE}" = "no" ]; then
     touch .unusable
 fi
