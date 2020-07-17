@@ -79,22 +79,11 @@ for i in $(seq "${page_count}"); do
         rm -f "${curl_output_file}"
         exit 1
     fi
-    # this removes projects that are
-    # 1. owned by me
-    # 2. are hard-forks of android-libcore, because they're very big and
-    #    we can't handle them anyway
-    # 3. are hard-forks of apache harmony, for the same reason
-    # 4. are owned by the user AndroidSDKSources, because those
-    #    are all copies of (surprise!) the android SDK, which we
-    #    don't care about for the same reasons.
+  
     grep "        \"html_url" < "${curl_output_file}" \
         | grep -v "          " \
         | sort -u \
-        | cut -d \" -f 4 \
-        | grep -v "kelloggm" \
-        | grep -v "libcore" \
-        | grep -v "apache-harmony" \
-        | grep -v "AndroidSDKSources" >> "${tempfile}"
+        | cut -d \" -f 4 >> "${tempfile}"
 done
 
 rm -f "${curl_output_file}"
