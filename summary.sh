@@ -34,13 +34,13 @@ echo ""
 grep -l "dljc timed out for" "${targetdir}/*.log"
 echo ""
 
-unaccounted_for=$(cat "${targetdir}/unaccounted_for.txt")
+for_manual_inspection=$(cat "${targetdir}/for_manual_inspection.txt")
 
-echo "unaccounted for: "
+echo "these need to be manually inspected: "
 echo ""
-echo "${unaccounted_for}" | tr ' ' '\n'
+echo "${for_manual_inspection}" | tr ' ' '\n'
 echo ""
 
-echo "unaccounted for LoC:"
+echo "LoC of projects to be manually inspected:"
 
 cat "${targetdir}/loc.txt"

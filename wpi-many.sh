@@ -3,21 +3,19 @@
 # This script runs the Checker Framework's whole-program inference on each of a list of projects.
 
 ### Usage
+#
+# See the README.md file that accompanies this script.
+#
 
-# - Clone the wpi-many repository containing this script on the experimental
-#   machine.
-# - Make a file containing a list of git repositories and hashes. Each line of
-#   the file should contain one repository and one hash, and may optionally
-#   contain a third repository (see the -i argument description below).
-#   run-queries.sh creates such a list of projects.
+### Dependencies:
+#
 # - Ensure that your JAVA8_HOME variable points to a Java 8 JDK
 # - Ensure that your JAVA11_HOME variable points to a Java 11 JDK
 # - Ensure that your CHECKERFRAMEWORK variable points to a built copy of the Checker Framework
 # - Other dependencies: perl, python2.7 (for dljc), awk, git, mvn, gradle, wget, curl
-# - Run the script. There is an example invocation in
-#   no-literal-securerandom-exact-dljc-cmd.sh
 #
-# The meaning of each required argument is:
+
+### Required arguments:
 #
 # -o outdir : run the experiment in the ./outdir directory, and place the
 #             results in the ./outdir-results directory. Both will be created
@@ -34,7 +32,8 @@
 #             then each line owned by that user must contain a third element,
 #             the original github repository.
 #
-# The meaning of each optional argument is:
+
+### Optional arguments:
 #
 # -u user : the GitHub owner for repositories that have
 #           been forked and modified. These repositories must have a third entry
@@ -70,6 +69,8 @@ shift $(( OPTIND - 1 ))
 
 # check required arguments and environment variables:
 
+# testing for JAVA8_HOME, not an unintentional reference to JAVA_HOME
+# shellcheck disable=SC2153
 if [ "x${JAVA8_HOME}" = "x" ]; then
     echo "JAVA8_HOME must be set to a Java 8 JDK"
     exit 1
@@ -80,6 +81,8 @@ if [ ! -d "${JAVA8_HOME}" ]; then
     exit 1
 fi
 
+# testing for JAVA11_HOME, not an unintentional reference to JAVA_HOME
+# shellcheck disable=SC2153
 if [ "x${JAVA11_HOME}" = "x" ]; then
     echo "JAVA11_HOME must be set to a Java 11 JDK"
     exit 1
@@ -114,18 +117,11 @@ if [ "x${GITHUB_USER}" = "x" ]; then
     GITHUB_USER="${USER}"
 fi
 
+export JAVA_HOME="${JAVA11_HOME}"
+
 ### Script
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-
-# clone or update DLJC
-if [ ! -d "${SCRIPTDIR}/../do-like-javac" ]; then
-    git -C "${SCRIPTDIR}/.." clone https://github.com/kelloggm/do-like-javac
-else
-    git -C "${SCRIPTDIR}/../do-like-javac" pull
-fi
-
-export DLJC="${SCRIPTDIR}/../do-like-javac/dljc"
     
 export PATH="${JAVA_HOME}/bin:${PATH}"
 
@@ -200,15 +196,17 @@ done <"${INLIST}"
 
 popd || exit 5
 
-unaccounted_for=$(grep -Zvl "no build file found for" "${OUTDIR}-results/*.log" \
+for_manual_inspection=$(grep -Zvl "no build file found for" "${OUTDIR}-results/*.log" \
     | xargs -0 grep -Zvl "dljc could not run the Checker Framework" \
     | xargs -0 grep -Zvl "dljc could not run the build successfully" \
     | xargs -0 grep -Zvl "dljc timed out for" \
     | xargs -0 echo)
 
-echo "${unaccounted_for}" > "${OUTDIR}-results/unaccounted_for.txt"
+echo "${for_manual_inspection}" > "${OUTDIR}-results/for_manual_inspection.txt"
 
-javafiles=$(grep -oh "\S*\.java " "${unaccounted_for}")
+# Compute lines of non-comment, non-blank Java code in the projects whose
+# results need to be inspected by hand (that is, those that WPI succeeded on).
+javafiles=$(grep -oh "\S*\.java " "${for_manual_inspection}")
 
 pushd "${SCRIPTDIR}/.." || exit 5
 wget -nc "https://github.com/AlDanial/cloc/releases/download/1.80/cloc-1.80.pl"

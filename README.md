@@ -31,7 +31,12 @@ pairs.
 3. Use `summary.sh` to summarize the logs in the output results directory.
 Use its output to guide your analysis of the results of running ./wpi-many.sh:
 you should manually examine the results of any project that appears in the
-"unaccounted for" list it produces.
+"for manual inspection" list it produces. This list is the list of every project
+that the script was able to successfully run WPI on. Each log file will include
+all the checker invocations that were used during WPI on that project.
+You should use the log to determine whether the project was verified
+(i.e. no errors were reported), or whether the checker issued true or
+false positive warnings.
 
 4. (Optional) Fork repositories and make changes (e.g., add annotations).
 Modify the input file for wpi-many.sh to remove the line for the original repository,

@@ -11,7 +11,6 @@
 # -i and -o are not valid options
 # new required option -d: the directory containing the target project
 #
-# The DLJC environment variable must point to the dljc script.
 
 while getopts "d:u:t:" opt; do
   case $opt in
@@ -68,14 +67,9 @@ if [ ! -d "${CHECKERFRAMEWORK}" ]; then
     exit 2
 fi
 
-if [ "x${DLJC}" = "x" ]; then
-    echo "DLJC is not set; it must be set to the dljc executable. Please checkout github.com/kelloggm/do-like-javac and point the DLJC environment variable to its dljc script"
-    exit 3
-fi
-
-if [ ! -f "${DLJC}" ]; then
-    echo "DLJC is set to a non-existent file ${DLJC}"
-    exit 2
+if [ "x${DIR}" = "x" ]; then
+    echo "wpi.sh called without a -d argument. The -d argument is required. Please provide the absolute path to the directory containing the project on which to run wpi."
+    exit 4
 fi
 
 if [ ! -d "${DIR}" ]; then
@@ -158,6 +152,19 @@ function configure_and_exec_dljc {
       fi
   fi
 }
+
+#### Check and setup dependencies
+
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+# clone or update DLJC
+if [ ! -d "${SCRIPTDIR}/../do-like-javac" ]; then
+    git -C "${SCRIPTDIR}/.." clone https://github.com/kelloggm/do-like-javac
+else
+    git -C "${SCRIPTDIR}/../do-like-javac" pull
+fi
+
+DLJC="${SCRIPTDIR}/../do-like-javac/dljc"
 
 #### Main script
 
