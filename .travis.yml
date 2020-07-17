@@ -1,5 +1,4 @@
 # travis should have shellcheck by default
 language: minimal
 
-script:
-	- make
+script: make
