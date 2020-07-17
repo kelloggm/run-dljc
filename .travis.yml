@@ -1,0 +1,2 @@
+# travis should run shellcheck by default
+language: minimal
