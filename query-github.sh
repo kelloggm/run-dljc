@@ -29,16 +29,18 @@ fi
 
 query=$(tr ' ' '+' < "${query_file}")
 
+mkdir -p "/tmp/$USER"
+
 ## for storing the results before sorting and uniqing them
-rm -f /tmp/github-query-results-*.txt
-tempfile=$(mktemp /tmp/github-query-results-XXX.txt)
+rm -f "/tmp/$USER/github-query-results-*.txt"
+tempfile=$(mktemp "/tmp/$USER/github-query-results-XXX.txt")
 #trap "rm -f ${tempfile}" 0 2 3 15
 
-rm -f /tmp/github-hash-results-*.txt
-hashfile=$(mktemp /tmp/github-hash-results-XXX.txt)
+rm -f "/tmp/$USER/github-hash-results-*.txt"
+hashfile=$(mktemp "/tmp/$USER/github-hash-results-XXX.txt")
 #trap "rm -f ${hashfile}" 0 2 3 15
 
-curl_output_file=$(mktemp curl-output-XXX.txt --tmpdir)
+curl_output_file=$(mktemp "/tmp/$USER/curl-output-XXX.txt")
 
 # find the repos
 for i in $(seq "${page_count}"); do
@@ -56,12 +58,13 @@ for i in $(seq "${page_count}"); do
             -o "${curl_output_file}" \
             "${full_query}")
 
-        # 200 and 422 are both non-error codes. Failures are usually due to
-        # triggering the abuse detection mechanism for sending too many
-        # requests, so we add a delay when this happens.
         if [ "${status_code}" -eq 200 ] || [ "${status_code}" -eq 422 ]; then
+            # 200 is success.  422 means too many GitHub requests.
             break
         elif [ "${tries}" -lt $((query_tries - 1)) ]; then
+            # Other status codes are failures. Failures are usually due to
+            # triggering the abuse detection mechanism for sending too many
+            # requests, so we add a delay when this happens.
             sleep 20
         fi
     done
@@ -96,6 +99,7 @@ done
 
 rm -f "${curl_output_file}"
 
+# Each loop iteration was sorted and unique; this does it for the full result.
 sort -u -o "${tempfile}" "${tempfile}"
 
 while IFS= read -r line

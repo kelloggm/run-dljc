@@ -92,8 +92,8 @@ function configure_and_exec_dljc {
       else
 	  GRADLE_EXEC="gradle"
       fi
-      BUILD_CMD="${GRADLE_EXEC} clean compileJava -g .gradle -Dorg.gradle.java.home=${JAVA_HOME}"
       CLEAN_CMD="${GRADLE_EXEC} clean -g .gradle -Dorg.gradle.java.home=${JAVA_HOME}"
+      BUILD_CMD="${GRADLE_EXEC} clean compileJava -g .gradle -Dorg.gradle.java.home=${JAVA_HOME}"
   elif [ -f pom.xml ]; then
       if [ -f mvnw ]; then
 	  chmod +x mvnw
@@ -101,13 +101,13 @@ function configure_and_exec_dljc {
       else
 	  MVN_EXEC="mvn"
       fi
-      # if running on java 8, you must add /jre to the end of this Maven command
+      # if running on java 8, need /jre at the end of this Maven command
       if [ "${JAVA_HOME}" = "${JAVA8_HOME}" ]; then
-          BUILD_CMD="${MVN_EXEC} clean compile -Djava.home=${JAVA_HOME}/jre"
           CLEAN_CMD="${MVN_EXEC} clean -Djava.home=${JAVA_HOME}/jre"
+          BUILD_CMD="${MVN_EXEC} clean compile -Djava.home=${JAVA_HOME}/jre"
       else
-          BUILD_CMD="${MVN_EXEC} clean compile -Djava.home=${JAVA_HOME}"
           CLEAN_CMD="${MVN_EXEC} clean -Djava.home=${JAVA_HOME}"
+          BUILD_CMD="${MVN_EXEC} clean compile -Djava.home=${JAVA_HOME}"
       fi
   else
       echo "no build file found for ${REPO_NAME}; not calling DLJC"
@@ -133,26 +133,28 @@ function configure_and_exec_dljc {
 
   echo "${DLJC_CMD}"
 
+  # This command also includes "clean"; I'm not sure why it is necessary.
   eval "${DLJC_CMD}" < /dev/null
 
   if [[ $? -eq 124 ]]; then
       echo "dljc timed out for ${DIR}"
       USABLE="no"
-  else 
-      if [ -f dljc-out/wpi.log ]; then
-          USABLE="yes"
+      return
+  fi
+
+  if [ -f dljc-out/wpi.log ]; then
+      USABLE="yes"
+  else
+      # if this last run was under Java 11, try to run
+      # under Java 8 instead
+      if [ "${JAVA_HOME}" = "${JAVA11_HOME}" ]; then
+          export JAVA_HOME="${JAVA8_HOME}"
+          echo "couldn't build using Java 11; trying Java 8"
+          configure_and_exec_dljc "$@"
+          export JAVA_HOME="${JAVA11_HOME}"
       else
-          # if this last run was under Java 11, try to run
-          # under Java 8 instead
-          if [ "${JAVA_HOME}" = "${JAVA11_HOME}" ]; then
-              export JAVA_HOME="${JAVA8_HOME}"
-              echo "couldn't build using Java 11; trying Java 8"
-              configure_and_exec_dljc "$@"
-              export JAVA_HOME="${JAVA11_HOME}"
-          else
-              echo "dljc could not run the build successfully"
-              USABLE="no"
-          fi
+          echo "dljc could not run the build successfully"
+          USABLE="no"
       fi
   fi
 }

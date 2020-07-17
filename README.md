@@ -20,20 +20,26 @@ was created by running `./query-github.sh securerandom.query 100`.
 
 2. Use `wpi-many.sh` to run whole-program inference on every buildable
 gradle or maven project in a list of (GitHub repository URL, git hash)
-pairs.  File `no-literal-securerandom-exact-cmd.sh` is a no-arguments
-script that serves as an example of how to use `wpi-many.sh` with a
-custom checker.
+pairs.
+ * If you are using a checker that is distributed with the Checker
+   Framework, use wpi-many.sh or wpi.sh directly.
+ * If you are using a checker that is not distributed with the Checker
+   Framework (also known as as "custom checker"), file
+   `no-literal-securerandom-exact-cmd.sh` is a no-arguments
+   script that serves as an example of how to use `wpi-many.sh`.
 
 3. Use `summary.sh` to summarize the logs in the output results directory.
 Use its output to guide your analysis of the results of running ./wpi-many.sh:
 you should manually examine the results of any project that appears in the
 "unaccounted for" list it produces.
 
-4. (Optional) Fork repositories and add annotations or make changes to them.
-Then, supply the -u "$yourGithubId" option to wpi-many.sh when you re-run
-the experiments. wpi-many.sh will use your forked version rather than
-the original. You must modify the input file for wpi-many.sh to indicate
-the location of the original file, as well.
+4. (Optional) Fork repositories and make changes (e.g., add annotations).
+Modify the input file for wpi-many.sh to remove the line for the original repository,
+but add a new line that indicates the location of both your
+fork and the original repository.
+Then, re-run your experiments, supplying the -u "$yourGithubId" option to wpi-many.sh.
+. wpi-many.sh will use your forked version rather than
+the original. 
 
 See the documentation of the individual scripts for more information.
 

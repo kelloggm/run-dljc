@@ -36,7 +36,7 @@
 #
 # The meaning of each optional argument is:
 #
-# -u user : the GitHub user to consider the "owner" for repositories that have
+# -u user : the GitHub owner for repositories that have
 #           been forked and modified. These repositories must have a third entry
 #           in the infile indicating their origin. Default is "$USER".
 #
@@ -55,7 +55,7 @@ while getopts "o:i:u:t:" opt; do
        ;;
     i) INLIST="$OPTARG"
        ;;
-    u) SPECIAL_USER="$OPTARG"
+    u) GITHUB_USER="$OPTARG"
        ;;
     t) TOUT="$OPTARG"
        ;;        
@@ -110,8 +110,8 @@ if [ "x${INLIST}" = "x" ]; then
     exit 4
 fi
 
-if [ "x${SPECIAL_USER}" = "x" ]; then
-    SPECIAL_USER="${USER}"
+if [ "x${GITHUB_USER}" = "x" ]; then
+    GITHUB_USER="${USER}"
 fi
 
 ### Script
@@ -156,13 +156,12 @@ do
         # this environment variable prevents git from prompting for
 	# username/password if the repository no longer exists
         GIT_TERMINAL_PROMPT=0 git clone "${REPO}"
+        # skip the rest of the script if cloning isn't successful
+        if [ -d "${REPO_NAME}" ]; then
+           continue
+        fi
     else
         rm -rf "${REPO_NAME}/dljc-out"
-    fi
-
-    # skip the rest of the script if cloning isn't successful
-    if [ -d "${REPO_NAME}" ];
-       continue;
     fi
 
     pushd "${REPO_NAME}" || exit 5
@@ -171,7 +170,7 @@ do
 
     OWNER=$(echo "${REPO}" | cut -d / -f 4)
 
-    if [ "${OWNER}" = "${SPECIAL_USER}" ]; then
+    if [ "${OWNER}" = "${GITHUB_USER}" ]; then
         ORIGIN=$(echo "${REPOHASH}" | awk '{print $3}')
         git remote add unannotated "${ORIGIN}"
     fi
@@ -183,7 +182,7 @@ do
     RESULT_LOG="${OUTDIR}-results/${REPO_NAME_HASH}-wpi.log"
     touch "${RESULT_LOG}"
 
-    "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -u "${SPECIAL_USER}" -t "${TOUT}" "$@" &> "${RESULT_LOG}"
+    "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -u "${GITHUB_USER}" -t "${TOUT}" "$@" &> "${RESULT_LOG}"
 
     popd || exit 5
 
