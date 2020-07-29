@@ -46,5 +46,5 @@ if [ -f "${targetdir}/loc.txt" ]; then
 
     cat "${targetdir}/loc.txt"
 else
-    echo "No LoC count found for projects to be manuall inspected"
+    echo "No LoC count found for projects to be manually inspected"
 fi
