@@ -155,7 +155,7 @@ do
 	# username/password if the repository no longer exists
         GIT_TERMINAL_PROMPT=0 git clone "${REPO}"
         # skip the rest of the script if cloning isn't successful
-        if [ -d "${REPO_NAME}" ]; then
+        if [ ! -d "${REPO_NAME}" ]; then
            continue
         fi
     else
@@ -198,7 +198,7 @@ done <"${INLIST}"
 
 popd || exit 5
 
-for_manual_inspection=$(grep -Zvl "no build file found for" "${OUTDIR}-results/*.log" \
+for_manual_inspection=$(grep -Zvl "no build file found for" "${OUTDIR}-results/"*.log \
     | xargs -0 grep -Zvl "dljc could not run the Checker Framework" \
     | xargs -0 grep -Zvl "dljc could not run the build successfully" \
     | xargs -0 grep -Zvl "dljc timed out for" \
@@ -206,12 +206,18 @@ for_manual_inspection=$(grep -Zvl "no build file found for" "${OUTDIR}-results/*
 
 echo "${for_manual_inspection}" > "${OUTDIR}-results/for_manual_inspection.txt"
 
-# Compute lines of non-comment, non-blank Java code in the projects whose
-# results need to be inspected by hand (that is, those that WPI succeeded on).
-javafiles=$(grep -oh "\S*\.java " "${for_manual_inspection}")
+if [ -n "${for_manual_inspection}" ]; then
+    listpath=$(mktemp /tmp/cloc-file-list-XXX.txt)
+    # Compute lines of non-comment, non-blank Java code in the projects whose
+    # results need to be inspected by hand (that is, those that WPI succeeded on).
+    grep -oh "\S*\.java" "${for_manual_inspection}" | sort | uniq > "${listpath}"
 
-pushd "${SCRIPTDIR}/.." || exit 5
-wget -nc "https://github.com/AlDanial/cloc/releases/download/1.80/cloc-1.80.pl"
-popd || exit 5
+    pushd "${SCRIPTDIR}/.." || exit 5
+    wget -nc "https://github.com/AlDanial/cloc/releases/download/1.80/cloc-1.80.pl"
+    popd || exit 5
 
-perl "${SCRIPTDIR}/../cloc-1.80.pl" --report="${OUTDIR}-results/loc.txt" "${javafiles}"
+    perl "${SCRIPTDIR}/../cloc-1.80.pl" --report="${OUTDIR}-results/loc.txt" \
+        --list-file="${listpath}"
+
+    rm -f "${listpath}"
+fi
