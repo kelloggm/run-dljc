@@ -204,12 +204,18 @@ for_manual_inspection=$(grep -Zvl "no build file found for" "${OUTDIR}-results/"
 
 echo "${for_manual_inspection}" > "${OUTDIR}-results/for_manual_inspection.txt"
 
-# Compute lines of non-comment, non-blank Java code in the projects whose
-# results need to be inspected by hand (that is, those that WPI succeeded on).
-javafiles=$(grep -oh "\S*\.java " "${for_manual_inspection}")
+if [ -n "${for_manual_inspection}" ]; then
+    listpath=$(mktemp /tmp/cloc-file-list-XXX.txt)
+    # Compute lines of non-comment, non-blank Java code in the projects whose
+    # results need to be inspected by hand (that is, those that WPI succeeded on).
+    grep -oh "\S*\.java" "${for_manual_inspection}" | sort | uniq > "${listpath}"
 
-pushd "${SCRIPTDIR}/.." || exit 5
-wget -nc "https://github.com/AlDanial/cloc/releases/download/1.80/cloc-1.80.pl"
-popd || exit 5
+    pushd "${SCRIPTDIR}/.." || exit 5
+    wget -nc "https://github.com/AlDanial/cloc/releases/download/1.80/cloc-1.80.pl"
+    popd || exit 5
 
-perl "${SCRIPTDIR}/../cloc-1.80.pl" --report="${OUTDIR}-results/loc.txt" "${javafiles}"
+    perl "${SCRIPTDIR}/../cloc-1.80.pl" --report="${OUTDIR}-results/loc.txt" \
+        --list-file="${listpath}"
+
+    rm -f "${listpath}"
+fi
