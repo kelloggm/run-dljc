@@ -64,6 +64,7 @@ rm -rf "${checkername}-${repolistbase}-results"
 bash wpi-many.sh -o "${checkername}-${repolistbase}" \
      -i "${PARENTDIR}/${repolist}" \
      -t ${timeout} \
+     -- \
      --checker "${checker}" \
      --quals "${qual_classpath}" \
      --lib "${checker_classpath}" \

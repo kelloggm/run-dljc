@@ -45,7 +45,9 @@
 # to DLJC without modification. See the documentation of DLJC for
 # an explanation of these arguments: https://github.com/kelloggm/do-like-javac
 # At least one such argument is required: --checker, which tells DLJC what
-# typechecker to run.
+# typechecker to run. The "--" argument should be given before the DLJC
+# arguments to indicate that the remaining arguments should be passed to DLJC
+# rather than interpreted as command line options for this script.
 #
 
 while getopts "o:i:u:t:" opt; do
@@ -178,7 +180,7 @@ do
     RESULT_LOG="${OUTDIR}-results/${REPO_NAME_HASH}-wpi.log"
     touch "${RESULT_LOG}"
 
-    "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -u "${GITHUB_USER}" -t "${TOUT}" "$@" &> "${RESULT_LOG}"
+    "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -u "${GITHUB_USER}" -t "${TOUT}" -- "$@" &> "${RESULT_LOG}"
 
     popd || exit 5
 
