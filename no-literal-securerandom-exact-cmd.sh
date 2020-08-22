@@ -37,7 +37,7 @@ qual_classpath='/homes/gws/kelloggm/compliance-experiments/fse20/no-literal-chec
 
 # The checker classpath, obtained by running ./gradlew -q printClasspath
 # in the mychecker-checker subproject.
-# If your custom checker does not define a task, you define it:
+# If your custom checker does not define such a task, you define it:
 #
 # task printClasspath {
 #     doLast {

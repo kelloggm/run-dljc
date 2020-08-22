@@ -31,7 +31,7 @@ shift $(( OPTIND - 1 ))
 
 # check required arguments and environment variables:
 
-# testing for JAVA8_HOME, not an unintentional reference to JAVA_HOME
+# Testing for JAVA8_HOME, not a misspelling of JAVA_HOME.
 # shellcheck disable=SC2153
 if [ "x${JAVA8_HOME}" = "x" ]; then
     echo "JAVA8_HOME must be set to a Java 8 JDK"
@@ -43,7 +43,7 @@ if [ ! -d "${JAVA8_HOME}" ]; then
     exit 1
 fi
 
-# testing for JAVA11_HOME, not an unintentional reference to JAVA_HOME
+# Testing for JAVA11_HOME, not a misspelling of JAVA_HOME.
 # shellcheck disable=SC2153
 if [ "x${JAVA11_HOME}" = "x" ]; then
     echo "JAVA11_HOME must be set to a Java 11 JDK"
@@ -68,12 +68,12 @@ if [ ! -d "${CHECKERFRAMEWORK}" ]; then
 fi
 
 if [ "x${DIR}" = "x" ]; then
-    echo "wpi.sh called without a -d argument. The -d argument is required. Please provide the absolute path to the directory containing the project on which to run wpi."
+    echo "wpi.sh was called without a -d argument. The -d argument must be the absolute path to the directory containing the project on which to run WPI."
     exit 4
 fi
 
 if [ ! -d "${DIR}" ]; then
-    echo "wpi.sh called on invalid directory: ${DIR}. Please supply an existing directory's absolute path."
+    echo "wpi.sh's -d argument was not a directory: ${DIR}"
     exit 4
 fi
 

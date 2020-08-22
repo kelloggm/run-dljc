@@ -1,14 +1,15 @@
 ## wpi-many
 
-This project contains scripts used to control
+This project contains an ipmlementation of type inference for Checker
+Framework type qualifers.  More specifically, it contains scripts used to control
 [do-like-javac](https://github.com/kelloggm/do-like-javac) to run
 [whole-program
 inference](https://checkerframework.org/manual/#whole-program-inference)
 (WPI) of Checker Framework annotations.
 
-There are two modes these scripts support:
+These scripts support two use cases:
 1. running large-scale experiments on a collection of GitHub repositories, and
-2. running WPI on a single project on your local machine.
+2. inferring type qualifiers for a single project.
 
 ### Large experiments
 
@@ -19,31 +20,31 @@ File `securerandom.query` is an example query, and file `securerandom.list`
 was created by running `./query-github.sh securerandom.query 100`.
 
 2. Use `wpi-many.sh` to run whole-program inference on every buildable
-gradle or maven project in a list of (GitHub repository URL, git hash)
+Gradle or Maven project in a list of (GitHub repository URL, git hash)
 pairs.
  * If you are using a checker that is distributed with the Checker
    Framework, use wpi-many.sh or wpi.sh directly.
  * If you are using a checker that is not distributed with the Checker
-   Framework (also known as as "custom checker"), file
+   Framework (also known as a "custom checker"), file
    `no-literal-securerandom-exact-cmd.sh` is a no-arguments
    script that serves as an example of how to use `wpi-many.sh`.
 
 3. Use `summary.sh` to summarize the logs in the output results directory.
-Use its output to guide your analysis of the results of running ./wpi-many.sh:
+Use its output to guide your analysis of the results of running `wpi-many.sh`:
 you should manually examine the results of any project that appears in the
 "for manual inspection" list it produces. This list is the list of every project
 that the script was able to successfully run WPI on. Each log file will include
 all the checker invocations that were used during WPI on that project.
-You should use the log to determine whether the project was verified
-(i.e. no errors were reported), or whether the checker issued true or
-false positive warnings.
+The log indicates whether the project was verified
+(i.e. no errors were reported), or whether the checker issued warnings
+(which might be true positive or false positive warnings).
 
 4. (Optional) Fork repositories and make changes (e.g., add annotations).
 Modify the input file for wpi-many.sh to remove the line for the original repository,
 but add a new line that indicates the location of both your
 fork and the original repository.
-Then, re-run your experiments, supplying the -u "$yourGithubId" option to wpi-many.sh.
-. wpi-many.sh will use your forked version rather than
+Then, re-run your experiments, supplying the -u "$yourGithubId" option to `wpi-many.sh`.
+`wpi-many.sh` will perform inference on your forked version rather than
 the original. 
 
 See the documentation of the individual scripts for more information.
@@ -53,5 +54,5 @@ See the documentation of the individual scripts for more information.
 Run `wpi.sh`.
 Its use is similar to `wpi-many.sh`, described above. However,
 its input is a single directory on your local machine rather than
-a list of repositories and hashes. `wpi-many.sh` uses this script internally
+a list of repository URLs and hashes. `wpi-many.sh` uses this script internally
 after checking out projects.

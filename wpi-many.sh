@@ -9,9 +9,9 @@
 
 ### Dependencies:
 #
-# - Ensure that your JAVA8_HOME variable points to a Java 8 JDK
-# - Ensure that your JAVA11_HOME variable points to a Java 11 JDK
-# - Ensure that your CHECKERFRAMEWORK variable points to a built copy of the Checker Framework
+# - JAVA8_HOME environment variable must point to a Java 8 JDK
+# - JAVA11_HOME environment variable must point to a Java 11 JDK
+# - CHECKERFRAMEWORK environment variable must point to a built copy of the Checker Framework
 # - Other dependencies: perl, python2.7 (for dljc), awk, git, mvn, gradle, wget, curl
 #
 
@@ -151,10 +151,10 @@ do
     pushd "${REPO_NAME_HASH}" || exit 5
     
     if [ ! -d "${REPO_NAME}" ]; then
-        # this environment variable prevents git from prompting for
-	# username/password if the repository no longer exists
+        # The "GIT_TERMINAL_PROMPT=0" setting prevents git from prompting for
+	# username/password if the repository no longer exists.
         GIT_TERMINAL_PROMPT=0 git clone "${REPO}"
-        # skip the rest of the script if cloning isn't successful
+        # Skip the rest of the script if cloning isn't successful.
         if [ ! -d "${REPO_NAME}" ]; then
            continue
         fi

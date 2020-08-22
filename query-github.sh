@@ -59,9 +59,11 @@ for i in $(seq "${page_count}"); do
             "${full_query}")
 
         if [ "${status_code}" -eq 200 ] || [ "${status_code}" -eq 422 ]; then
+            # Don't retry.
             # 200 is success.  422 means too many GitHub requests.
             break
         elif [ "${tries}" -lt $((query_tries - 1)) ]; then
+            # Retry.
             # Other status codes are failures. Failures are usually due to
             # triggering the abuse detection mechanism for sending too many
             # requests, so we add a delay when this happens.
