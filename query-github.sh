@@ -40,6 +40,7 @@ rm -f "/tmp/$USER/github-hash-results-*.txt"
 hashfile=$(mktemp "/tmp/$USER/github-hash-results-XXX.txt")
 #trap "rm -f ${hashfile}" 0 2 3 15
 
+rm -rf "/tmp/$USER/curl-output-*.txt"
 curl_output_file=$(mktemp "/tmp/$USER/curl-output-XXX.txt")
 
 # find the repos

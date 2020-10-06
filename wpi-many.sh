@@ -39,15 +39,17 @@
 #           been forked and modified. These repositories must have a third entry
 #           in the infile indicating their origin. Default is "$USER".
 #
-# -t timeout : the timeout to use, in seconds
+# -t timeout : the timeout for running the checker (via WPI) on a single project, in seconds
 #
-# After these arguments, any remaining arguments are passed directly
-# to DLJC without modification. See the documentation of DLJC for
-# an explanation of these arguments: https://github.com/kelloggm/do-like-javac
-# At least one such argument is required: --checker, which tells DLJC what
-# typechecker to run. The "--" argument should be given before the DLJC
-# arguments to indicate that the remaining arguments should be passed to DLJC
-# rather than interpreted as command line options for this script.
+# Any arguments that follow these arguments (and are separated by a
+# literal "--") are passed directly to DLJC without modification. See
+# the documentation of DLJC for an explanation of these arguments:
+# https://github.com/kelloggm/do-like-javac At least one such argument
+# is required: --checker, which tells DLJC what typechecker to run. A
+# literal "--" argument must be given before the DLJC arguments (if
+# there are any) to indicate that the remaining arguments should be
+# passed to DLJC rather than interpreted as command line options for
+# this script.
 #
 
 while getopts "o:i:u:t:" opt; do
@@ -58,7 +60,7 @@ while getopts "o:i:u:t:" opt; do
        ;;
     u) GITHUB_USER="$OPTARG"
        ;;
-    t) TOUT="$OPTARG"
+    t) TIMEOUT="$OPTARG"
        ;;        
     \?) # the remainder of the arguments will be passed to DLJC directly
        ;;
@@ -180,7 +182,7 @@ do
     RESULT_LOG="${OUTDIR}-results/${REPO_NAME_HASH}-wpi.log"
     touch "${RESULT_LOG}"
 
-    "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -u "${GITHUB_USER}" -t "${TOUT}" -- "$@" &> "${RESULT_LOG}"
+    "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -u "${GITHUB_USER}" -t "${TIMEOUT}" -- "$@" &> "${RESULT_LOG}"
 
     popd || exit 5
 
@@ -198,19 +200,23 @@ done <"${INLIST}"
 
 popd || exit 5
 
+## This section is here rather than in summary.sh because cloc can be moderately expensive.
+## summary.sh is intended to be run while a human waits (unlike this script), so this script
+## precomputes as much as it can, to make summary.sh faster.
+
 for_manual_inspection=$(grep -Zvl "no build file found for" "${OUTDIR}-results/"*.log \
     | xargs -0 grep -Zvl "dljc could not run the Checker Framework" \
     | xargs -0 grep -Zvl "dljc could not run the build successfully" \
     | xargs -0 grep -Zvl "dljc timed out for" \
     | xargs -0 echo)
 
-echo "${for_manual_inspection}" > "${OUTDIR}-results/for_manual_inspection.txt"
+echo "${results_available}" > "${OUTDIR}-results/results_available.txt"
 
-if [ -n "${for_manual_inspection}" ]; then
+if [ -n "${results_available}" ]; then
     listpath=$(mktemp /tmp/cloc-file-list-XXX.txt)
     # Compute lines of non-comment, non-blank Java code in the projects whose
-    # results need to be inspected by hand (that is, those that WPI succeeded on).
-    grep -oh "\S*\.java" "${for_manual_inspection}" | sort | uniq > "${listpath}"
+    # results can be inspected by hand (that is, those that WPI succeeded on).
+    grep -oh "\S*\.java" "${results_available}" | sort | uniq > "${listpath}"
 
     pushd "${SCRIPTDIR}/.." || exit 5
     wget -nc "https://github.com/AlDanial/cloc/releases/download/1.80/cloc-1.80.pl"

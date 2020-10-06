@@ -25,7 +25,7 @@ checkername=no-literal
 repolist=securerandom.list
 
 # the stub files for the checker being used
-custom_stubs=/homes/gws/kelloggm/compliance-experiments/fse20/no-literal-checker/no-literal-checker/stubs
+custom_stubs=${PARENTDIR}/no-literal-checker/no-literal-checker/stubs
 
 # The qualifier classpath. Usually, this is just:
 #  * the qual jar for your checker, and

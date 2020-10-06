@@ -9,7 +9,7 @@
 #
 # Input differences compared to wpi-many.sh:
 # -i and -o are not valid options
-# new required option -d: the directory containing the target project
+# new required option -d: the absolute path to the directory containing the target project
 #
 
 while getopts "d:u:t:" opt; do
@@ -109,15 +109,12 @@ function configure_and_exec_dljc {
       return
   fi
     
-  DLJC_CMD="${DLJC} -t wpi"
+  DLJC_CMD="${DLJC} -t wpi $* -- ${BUILD_CMD}"
 
   if [ ! "x${TIMEOUT}" = "x" ]; then
       TMP="${DLJC_CMD}"
       DLJC_CMD="timeout ${TIMEOUT} ${TMP}"
   fi
-
-  TMP="${DLJC_CMD} $* -- ${BUILD_CMD}"
-  DLJC_CMD="${TMP}"
 
   # Remove old DLJC output.
   rm -rf dljc-out

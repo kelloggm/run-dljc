@@ -19,7 +19,7 @@ To run a large experiment:
 File `securerandom.query` is an example query, and file `securerandom.list`
 was created by running `./query-github.sh securerandom.query 100`.
 
-2. Use `wpi-many.sh` to run whole-program inference on every buildable
+2. Use `wpi-many.sh` to run whole-program inference on every
 Gradle or Maven project in a list of (GitHub repository URL, git hash)
 pairs.
  * If you are using a checker that is distributed with the Checker
@@ -29,17 +29,21 @@ pairs.
    `no-literal-securerandom-exact-cmd.sh` is a no-arguments
    script that serves as an example of how to use `wpi-many.sh`.
 
-3. Use `summary.sh` to summarize the logs in the output results directory.
-Use its output to guide your analysis of the results of running `wpi-many.sh`:
-you should manually examine the results of any project that appears in the
-"for manual inspection" list it produces. This list is the list of every project
-that the script was able to successfully run WPI on. Each log file will include
+The log files for each project are placed in a results directory.
+Each log file will either indicate the reason that WPI could not
+be run to completion on the project or include
 all the checker invocations that were used during WPI on that project.
-The log indicates whether the project was verified
+The log file for a succesful run indicates whether the project was verified
 (i.e. no errors were reported), or whether the checker issued warnings
 (which might be true positive or false positive warnings).
 
-4. (Optional) Fork repositories and make changes (e.g., add annotations).
+3. Use `summary.sh` to summarize the logs in the output results directory.
+Use its output to guide your analysis of the results of running `wpi-many.sh`:
+you should manually examine the log files for the projects that appear in the
+"results available" list it produces. This list is the list of every project
+that the script was able to successfully run WPI on.
+
+4. (Optional) Fork repositories and make changes (e.g., add annotations or fix bugs).
 Modify the input file for wpi-many.sh to remove the line for the original repository,
 but add a new line that indicates the location of both your
 fork and the original repository.
