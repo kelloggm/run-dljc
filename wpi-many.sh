@@ -204,7 +204,7 @@ popd || exit 5
 ## summary.sh is intended to be run while a human waits (unlike this script), so this script
 ## precomputes as much as it can, to make summary.sh faster.
 
-for_manual_inspection=$(grep -Zvl "no build file found for" "${OUTDIR}-results/"*.log \
+results_available=$(grep -Zvl "no build file found for" "${OUTDIR}-results/"*.log \
     | xargs -0 grep -Zvl "dljc could not run the Checker Framework" \
     | xargs -0 grep -Zvl "dljc could not run the build successfully" \
     | xargs -0 grep -Zvl "dljc timed out for" \
