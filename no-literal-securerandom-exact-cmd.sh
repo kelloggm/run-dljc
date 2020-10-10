@@ -27,17 +27,9 @@ repolist=securerandom.list
 # the stub files for the checker being used
 custom_stubs=${PARENTDIR}/no-literal-checker/no-literal-checker/stubs
 
-# The qualifier classpath. Usually, this is just:
-#  * the qual jar for your checker, and
-#  * the version of checker-qual.jar that your qualifiers depend on.
-# See the next comment for code that can generate a classpath for you, if your custom
-# checker is more complex.
-#
-qual_classpath='/homes/gws/kelloggm/compliance-experiments/fse20/no-literal-checker/no-literal-qual/build/libs/no-literal-qual.jar:/homes/gws/kelloggm/.gradle/caches/modules-2/files-2.1/org.checkerframework/checker-qual/3.1.1/361404eff7f971a296020d47c928905b3b9c5b5f/checker-qual-3.1.1.jar'
-
-# The checker classpath, obtained by running ./gradlew -q printClasspath
+# The checker classpath.  Paste in the result of running ./gradlew -q printClasspath
 # in the mychecker-checker subproject.
-# If your custom checker does not define such a task, you define it:
+# If your custom checker does not define such a task, you can define it:
 #
 # task printClasspath {
 #     doLast {
@@ -46,6 +38,14 @@ qual_classpath='/homes/gws/kelloggm/compliance-experiments/fse20/no-literal-chec
 # }
 #
 checker_classpath='/homes/gws/kelloggm/compliance-experiments/fse20/no-literal-checker/no-literal-checker/build/classes/java/main:/homes/gws/kelloggm/compliance-experiments/fse20/no-literal-checker/no-literal-checker/build/resources/main:/homes/gws/kelloggm/compliance-experiments/fse20/checker-framework/checker/dist/checker.jar:/homes/gws/kelloggm/compliance-experiments/fse20/no-literal-checker/no-literal-qual/build/libs/no-literal-qual.jar:/homes/gws/kelloggm/.gradle/caches/modules-2/files-2.1/com.google.errorprone/javac/9+181-r4173-1/bdf4c0aa7d540ee1f7bf14d47447aea4bbf450c5/javac-9+181-r4173-1.jar:/homes/gws/kelloggm/.gradle/caches/modules-2/files-2.1/org.checkerframework/checker-qual/3.1.1/361404eff7f971a296020d47c928905b3b9c5b5f/checker-qual-3.1.1.jar'
+
+# The qualifier classpath. Usually, this is a subset of checker_classpath that contains just two elements:
+#  * the qual jar for your checker, and
+#  * the version of checker-qual.jar that your qualifiers depend on.
+#
+qual_classpath='/homes/gws/kelloggm/compliance-experiments/fse20/no-literal-checker/no-literal-qual/build/libs/no-literal-qual.jar:/homes/gws/kelloggm/.gradle/caches/modules-2/files-2.1/org.checkerframework/checker-qual/3.1.1/361404eff7f971a296020d47c928905b3b9c5b5f/checker-qual-3.1.1.jar'
+
+
 
 ## Optionally change these.
 
