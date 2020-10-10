@@ -1,7 +1,7 @@
 ## wpi-many
 
-This project contains an ipmlementation of type inference for Checker
-Framework type qualifers.  More specifically, it contains scripts used to control
+This project contains an implementation of type inference for Checker
+Framework type qualifiers.  More specifically, it contains scripts used to control
 [do-like-javac](https://github.com/kelloggm/do-like-javac) to run
 [whole-program
 inference](https://checkerframework.org/manual/#whole-program-inference)
@@ -30,10 +30,9 @@ pairs.
    script that serves as an example of how to use `wpi-many.sh`.
 
 The log files for each project are placed in a results directory.
-Each log file will either indicate the reason that WPI could not
-be run to completion on the project or include
-all the checker invocations that were used during WPI on that project.
-The log file for a succesful run indicates whether the project was verified
+For a failed run, the log file indicate the reason that WPI could not
+be run to completion on the project.
+For a successful run the log file indicates whether the project was verified
 (i.e. no errors were reported), or whether the checker issued warnings
 (which might be true positive or false positive warnings).
 

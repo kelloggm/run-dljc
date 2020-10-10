@@ -44,7 +44,7 @@
 # Any arguments that follow these arguments (and are separated by a
 # literal "--") are passed directly to DLJC without modification. See
 # the documentation of DLJC for an explanation of these arguments:
-# https://github.com/kelloggm/do-like-javac At least one such argument
+# https://github.com/kelloggm/do-like-javac . At least one such argument
 # is required: --checker, which tells DLJC what typechecker to run. A
 # literal "--" argument must be given before the DLJC arguments (if
 # there are any) to indicate that the remaining arguments should be
