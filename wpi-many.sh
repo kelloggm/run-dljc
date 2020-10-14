@@ -43,13 +43,15 @@
 #
 # Any arguments that follow these arguments (and are separated by a
 # literal "--") are passed directly to DLJC without modification. See
-# the documentation of DLJC for an explanation of these arguments:
-# https://github.com/kelloggm/do-like-javac . At least one such argument
-# is required: --checker, which tells DLJC what typechecker to run. A
-# literal "--" argument must be given before the DLJC arguments (if
-# there are any) to indicate that the remaining arguments should be
-# passed to DLJC rather than interpreted as command line options for
-# this script.
+# the help text of DLJC (e.g. clone
+# https://github.com/kelloggm/do-like-javac and run
+# `python2 dljc --help`) for an explanation of these arguments.
+#
+# At least one such argument is required: --checker, which tells DLJC
+# what typechecker to run. A literal "--" argument must be given
+# before the DLJC arguments (if there are any) to indicate that the
+# remaining arguments should be passed to DLJC rather than interpreted
+# as command line options for this script.
 #
 
 while getopts "o:i:u:t:" opt; do
@@ -156,7 +158,8 @@ do
         # The "GIT_TERMINAL_PROMPT=0" setting prevents git from prompting for
 	# username/password if the repository no longer exists.
         GIT_TERMINAL_PROMPT=0 git clone "${REPO}"
-        # Skip the rest of the script if cloning isn't successful.
+        # Skip the rest of the loop and move on to the next project
+	# if cloning isn't successful.
         if [ ! -d "${REPO_NAME}" ]; then
            continue
         fi
@@ -186,9 +189,10 @@ do
 
     popd || exit 5
 
-    # if the result is unusable, we don't need it for data analysis and we can
-    # delete it right away
-    if [ -f "${REPO_FULLPATH}/.unusable" ]; then
+    # If the result is unusable (i.e. wpi cannot run),
+    # we don't need it for data analysis and we can
+    # delete it right away.
+    if [ -f "${REPO_FULLPATH}/.cannot-run-wpi" ]; then
         rm -rf "${REPO_NAME_HASH}" &
     else
         cat "${REPO_FULLPATH}/dljc-out/wpi.log" >> "${RESULT_LOG}"

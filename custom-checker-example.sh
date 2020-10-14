@@ -1,15 +1,14 @@
 #!/bin/sh
 
-## This script runs wpi-many.sh with appropriate arguments and
-## environment variables. It is copied from the experiments for the
-## Continuous Compliance paper. If you want to re-use this script,
-## you'll have to change environment variables and paths below.  Note
-## that this script is intended for use with a custom typechecker
-## (i.e., a typechecker that is not in the main Checker Framework
-## distribution).  If your typechecker is in the main Checker
-## Framework distribution, you should use wpi-many.sh or
-## wpi.sh directly rather than making a copy of
-## this script.
+## This is an example script that runs wpi-many.sh with appropriate
+## arguments and environment variables, using a custom typechecker.
+## If you want to use this script, you'll have to change
+## environment variables and paths below.  Note that this script is
+## intended for use with a custom typechecker (i.e., a typechecker
+## that is not in the main Checker Framework distribution).  If your
+## typechecker is in the main Checker Framework distribution, you
+## should use wpi-many.sh or wpi.sh directly rather than making a copy
+## of this script.
 
 ## Change these if necessary.
 
@@ -27,9 +26,10 @@ repolist=securerandom.list
 # the stub files for the checker being used
 custom_stubs=${PARENTDIR}/no-literal-checker/no-literal-checker/stubs
 
-# The checker classpath.  Paste in the result of running ./gradlew -q printClasspath
-# in the mychecker-checker subproject.
-# If your custom checker does not define such a task, you can define it:
+# The checker classpath.  Paste in the result of running ./gradlew -q
+# printClasspath in the subproject of your custom checker with the
+# checker implementation.  If your custom checker does not define such
+# a task, you can define it:
 #
 # task printClasspath {
 #     doLast {
@@ -39,9 +39,13 @@ custom_stubs=${PARENTDIR}/no-literal-checker/no-literal-checker/stubs
 #
 checker_classpath='/homes/gws/kelloggm/compliance-experiments/fse20/no-literal-checker/no-literal-checker/build/classes/java/main:/homes/gws/kelloggm/compliance-experiments/fse20/no-literal-checker/no-literal-checker/build/resources/main:/homes/gws/kelloggm/compliance-experiments/fse20/checker-framework/checker/dist/checker.jar:/homes/gws/kelloggm/compliance-experiments/fse20/no-literal-checker/no-literal-qual/build/libs/no-literal-qual.jar:/homes/gws/kelloggm/.gradle/caches/modules-2/files-2.1/com.google.errorprone/javac/9+181-r4173-1/bdf4c0aa7d540ee1f7bf14d47447aea4bbf450c5/javac-9+181-r4173-1.jar:/homes/gws/kelloggm/.gradle/caches/modules-2/files-2.1/org.checkerframework/checker-qual/3.1.1/361404eff7f971a296020d47c928905b3b9c5b5f/checker-qual-3.1.1.jar'
 
-# The qualifier classpath. Usually, this is a subset of checker_classpath that contains just two elements:
+# The qualifier classpath. Usually, this is a subset of
+# checker_classpath that contains just two elements:
 #  * the qual jar for your checker, and
 #  * the version of checker-qual.jar that your qualifiers depend on.
+#
+# Like checker_classpath, this is usually generated using the printClasspath
+# task in the qualifier subproject of your custom checker, if it has one.
 #
 qual_classpath='/homes/gws/kelloggm/compliance-experiments/fse20/no-literal-checker/no-literal-qual/build/libs/no-literal-qual.jar:/homes/gws/kelloggm/.gradle/caches/modules-2/files-2.1/org.checkerframework/checker-qual/3.1.1/361404eff7f971a296020d47c928905b3b9c5b5f/checker-qual-3.1.1.jar'
 

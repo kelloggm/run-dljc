@@ -105,7 +105,7 @@ function configure_and_exec_dljc {
       fi
   else
       echo "no build file found for ${REPO_NAME}; not calling DLJC"
-      USABLE="no"
+      WPI_RESULTS_AVAILABLE="no"
       return
   fi
     
@@ -129,24 +129,14 @@ function configure_and_exec_dljc {
 
   if [[ $? -eq 124 ]]; then
       echo "dljc timed out for ${DIR}"
-      USABLE="no"
+      WPI_RESULTS_AVAILABLE="no"
       return
   fi
 
   if [ -f dljc-out/wpi.log ]; then
-      USABLE="yes"
+      WPI_RESULTS_AVAILABLE="yes"
   else
-      # if this last run was under Java 11, try to run
-      # under Java 8 instead
-      if [ "${JAVA_HOME}" = "${JAVA11_HOME}" ]; then
-          export JAVA_HOME="${JAVA8_HOME}"
-          echo "couldn't build using Java 11; trying Java 8"
-          configure_and_exec_dljc "$@"
-          export JAVA_HOME="${JAVA11_HOME}"
-      else
-          echo "dljc could not run the build successfully"
-          USABLE="no"
-      fi
+      WPI_RESULTS_AVAILABLE="no"
   fi
 }
 
@@ -169,9 +159,20 @@ pushd "${DIR}" || exit 1
 
 configure_and_exec_dljc "$@"
 
-# support wpi-many.sh's ability to delete unusable projects automatically
-if [ "${USABLE}" = "no" ]; then
-    touch .unusable
+if [ "${WPI_RESULTS_AVAILABLE}" = "no" ]; then
+      # if running under Java 11 fails, try to run
+      # under Java 8 instead
+    export JAVA_HOME="${JAVA8_HOME}"
+    echo "couldn't build using Java 11; trying Java 8"
+    configure_and_exec_dljc "$@"
+    export JAVA_HOME="${JAVA11_HOME}"
+fi
+
+# support wpi-many.sh's ability to delete projects without usable results
+# automatically
+if [ "${WPI_RESULTS_AVAILABLE}" = "no" ]; then
+    echo "dljc could not run the build successfully"
+    touch .cannot-run-wpi
 fi
 
 popd || exit 1
