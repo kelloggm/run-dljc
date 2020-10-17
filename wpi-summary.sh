@@ -3,12 +3,13 @@
 # This script takes a directory of .log files as input, and produces a summary of the results.
 # Use its output to guide your analysis of the results of running ./wpi-many.sh.
 #
-# This script automatically categorizes projects that failed to build, projects
-# that do not have a maven or gradle build file, and projects that timed out.
-#
-# The rest of the projects are reported as "results available":  these are the projects
-# for which the checker produced output. This script makes no attempt to categorize these
-# projects: a human should inspect these log files/projects to see the results.
+# This script categorizes projects as:
+#  * does not have a maven or gradle build file
+#  * failed to build
+#  * WPI timed out
+#  * WPI produced results (reported as "results available"). This
+#    script makes no attempt to categorize these projects: a human
+#    should inspect these log files/projects to see the results.
 
 targetdir=$1
 

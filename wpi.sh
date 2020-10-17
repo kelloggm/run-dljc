@@ -25,8 +25,7 @@ while getopts "d:u:t:" opt; do
   esac
 done
 
-# shift so that the other arguments (that should be passed to dljc) are all
-# that's in $@
+# Make $@ be the arguments that should be passed to dljc.
 shift $(( OPTIND - 1 ))
 
 # check required arguments and environment variables:

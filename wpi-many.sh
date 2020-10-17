@@ -12,7 +12,7 @@
 # - JAVA8_HOME environment variable must point to a Java 8 JDK
 # - JAVA11_HOME environment variable must point to a Java 11 JDK
 # - CHECKERFRAMEWORK environment variable must point to a built copy of the Checker Framework
-# - Other dependencies: perl, python2.7 (for dljc), awk, git, mvn, gradle, wget, curl
+# - Other dependencies: perl (for cloc), python2.7 (for dljc), awk, git, mvn, gradle, wget, curl
 #
 
 ### Required arguments:
@@ -22,16 +22,17 @@
 #             if they do not exist.
 #
 # -i infile : read the list of repositories to use from the file $infile. Each
-#             line should contain the (https) url of the git repository on
-#             GitHub and the commit hash to use, separated by whitespace.
-#             Repositories must be of the form:
-#             https://github.com/username/repository - the script is reliant
-#             on the number of slashes, so excluding https:// is an error.
-#             
-#             If the repository's owner is the user specified by the -u flag,
-#             then each line owned by that user must contain a third element,
-#             the original github repository.
-#
+#             line should have 2 or 3 elements:
+#              * The URL of the git repository on GitHub. The URL must be of the
+#                form:  https://github.com/username/repository .  The script is
+#                reliant on the number of slashes, so excluding https:// is an
+#                error.
+#              * The commit hash to use, separated by whitespace.
+#              * if the repository's owner is the user specified by
+#                the -u flag, the original (upstream) GitHub
+#                repository.  Its only use is to be made an upstream
+#                named "unannotated".
+
 
 ### Optional arguments:
 #
@@ -69,8 +70,7 @@ while getopts "o:i:u:t:" opt; do
   esac
 done
 
-# shift so that the other arguments (that should be passed to dljc) are all
-# that's in $@
+# Make $@ be the arguments that should be passed to dljc.
 shift $(( OPTIND - 1 ))
 
 # check required arguments and environment variables:
@@ -204,9 +204,9 @@ done <"${INLIST}"
 
 popd || exit 5
 
-## This section is here rather than in summary.sh because cloc can be moderately expensive.
-## summary.sh is intended to be run while a human waits (unlike this script), so this script
-## precomputes as much as it can, to make summary.sh faster.
+## This section is here rather than in wpi-summary.sh because cloc can be moderately expensive.
+## wpi-summary.sh is intended to be run while a human waits (unlike this script), so this script
+## precomputes as much as it can, to make wpi-summary.sh faster.
 
 results_available=$(grep -Zvl "no build file found for" "${OUTDIR}-results/"*.log \
     | xargs -0 grep -Zvl "dljc could not run the Checker Framework" \

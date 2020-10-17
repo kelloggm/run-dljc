@@ -36,7 +36,7 @@ For a successful run the log file indicates whether the project was verified
 (i.e. no errors were reported), or whether the checker issued warnings
 (which might be true positive or false positive warnings).
 
-3. Use `summary.sh` to summarize the logs in the output results directory.
+3. Use `wpi-summary.sh` to summarize the logs in the output results directory.
 Use its output to guide your analysis of the results of running `wpi-many.sh`:
 you should manually examine the log files for the projects that appear in the
 "results available" list it produces. This list is the list of every project
