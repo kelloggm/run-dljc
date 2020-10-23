@@ -26,7 +26,7 @@ pairs.
    Framework, use wpi-many.sh or wpi.sh directly.
  * If you are using a checker that is not distributed with the Checker
    Framework (also known as a "custom checker"), file
-   `no-literal-securerandom-exact-cmd.sh` is a no-arguments
+   `custom-checker-example.sh` is a no-arguments
    script that serves as an example of how to use `wpi-many.sh`.
 
 The log files for each project are placed in a results directory.
