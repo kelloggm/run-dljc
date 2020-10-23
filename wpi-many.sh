@@ -12,7 +12,7 @@
 # - JAVA8_HOME environment variable must point to a Java 8 JDK
 # - JAVA11_HOME environment variable must point to a Java 11 JDK
 # - CHECKERFRAMEWORK environment variable must point to a built copy of the Checker Framework
-# - Other dependencies: perl (for cloc), python2.7 (for dljc), awk, git, mvn, gradle, wget, curl
+# - Other dependencies: python2.7 (for dljc), awk, git, mvn, gradle, wget, curl
 #
 
 ### Required arguments:
@@ -223,11 +223,12 @@ if [ -n "${results_available}" ]; then
     grep -oh "\S*\.java" "${results_available}" | sort | uniq > "${listpath}"
 
     pushd "${SCRIPTDIR}/.." || exit 5
-    wget -nc "https://github.com/AlDanial/cloc/releases/download/1.80/cloc-1.80.pl"
+    wget -nc "https://github.com/boyter/scc/releases/download/v2.13.0/scc-2.13.0-i386-unknown-linux.zip"
+    unzip "scc-2.13.0-i386-unknown-linux.zip"
     popd || exit 5
 
-    perl "${SCRIPTDIR}/../cloc-1.80.pl" --report="${OUTDIR}-results/loc.txt" \
-        --list-file="${listpath}"
+    "${SCRIPTDIR}/../scc" --output "${OUTDIR}-results/loc.txt" \
+        "$(< "${listpath}")"
 
     rm -f "${listpath}"
 fi
