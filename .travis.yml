@@ -1,4 +1,9 @@
 # travis should have shellcheck by default
 language: minimal
 
+addons:
+  apt:
+    package:
+      - devscripts
+
 script: make
