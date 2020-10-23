@@ -22,6 +22,7 @@ export CHECKERFRAMEWORK=${PARENTDIR}/checker-framework
 checker=org.checkerframework.checker.noliteral.NoLiteralChecker
 checkername=no-literal
 repolist=securerandom.list
+workingdir=$(pwd)
 
 # the stub files for the checker being used
 custom_stubs=${PARENTDIR}/no-literal-checker/no-literal-checker/stubs
@@ -65,7 +66,7 @@ repolistbase=$(basename "$repolist")
 
 rm -rf "${checkername}-${repolistbase}-results"
 
-bash wpi-many.sh -o "${checkername}-${repolistbase}" \
+bash wpi-many.sh -o "${workingdir}/${checkername}-${repolistbase}" \
      -i "${PARENTDIR}/${repolist}" \
      -t ${timeout} \
      -- \
